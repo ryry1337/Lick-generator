@@ -1,404 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EarLick – Pro Studio Guitar Ear Trainer</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lick Generator 🎸</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.39/Tone.js"></script>
   <style>
-    :root{--bg:#07070b;--panel:#0b0f1a;--panel2:#0e1424;--card:#0d1626;--accent:#8ef5c3;--accent2:#7cc7ff;--muted:#98a6d8;--txt:#e9f2ff;--warn:#ffb86b}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg),#071022);color:var(--txt)}
-    header{padding:28px 16px 12px;text-align:center}
-    h1{margin:0;font-size:30px}
-    .sub{color:var(--muted);font-size:13px;margin-top:6px}
-    .container{max-width:1150px;margin:18px auto 48px;padding:0 18px}
-    .grid{display:grid;grid-template-columns:380px 1fr;gap:18px}
-    @media(max-width:980px){.grid{grid-template-columns:1fr}}
-    .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 30px rgba(0,0,0,.6)}
-    h2{color:var(--accent2);margin:0 0 10px;font-size:16px}
-    label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
-    select,input[type=range],input[type=number]{width:100%;background:#081125;color:var(--txt);border:1px solid #17223d;border-radius:10px;padding:9px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-    .btnbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    button{background:linear-gradient(180deg,#122344,#0b1832);color:var(--txt);border:1px solid #20365f;padding:10px 12px;border-radius:12px;font-weight:700;cursor:pointer}
-    .primary{background:linear-gradient(180deg,var(--accent),#1aa26a);border-color:var(--accent);color:#052114}
-    .ghost{background:transparent;border:1px dashed #233455}
-    .pill{display:inline-block;background:rgba(255,255,255,0.02);color:var(--muted);padding:5px 10px;border-radius:999px;margin-right:8px;font-size:12px}
-    .tabbox{background:#07112a;border:1px solid #162644;border-radius:10px;padding:12px;font-family:ui-monospace,Menlo,Consolas,monospace}
-    pre{margin:0;font-size:12px;color:#dfe9ff;overflow:auto;white-space:pre}
-    .meter{height:12px;background:#07142b;border-radius:999px;overflow:hidden;border:1px solid #14243f}
-    .meter > div{height:100%;width:0%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .35s ease}
-    .bankItem{background:#08122a;border:1px solid #162644;border-radius:10px;padding:10px;margin-bottom:10px}
-    .statusRow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-    .small{font-size:12px;color:var(--muted)}
-    .gameHUD{display:flex;gap:12px;align-items:center}
-    .badge{background:rgba(255,255,255,0.02);padding:6px 10px;border-radius:8px;color:var(--muted);font-size:13px}
-    .footer{text-align:center;color:var(--muted);font-size:12px;padding:14px}
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, #111, #000);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      justify-content: center;
+      text-align: center;
+    }
+    h1 { font-size: 2.5rem; margin-bottom: 10px; color: #00e0ff; }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+    }
+    button {
+      background: linear-gradient(90deg, #00e0ff, #0077ff);
+      border: none;
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+    button:hover {
+      transform: scale(1.05);
+      background: linear-gradient(90deg, #00baff, #0066ff);
+    }
+    .slider {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #ccc;
+    }
+    input[type=range] { width: 150px; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🎸 EarLick Studio</h1>
-    <div class="sub">Pro Studio look • Real instrument samples streamed on demand • Call & Response • Game</div>
-  </header>
-
-  <div class="container">
-    <div class="grid">
-      <div class="card">
-        <h2>Generator & Game</h2>
-        <div style="margin-top:6px">
-          <div class="row">
-            <div>
-              <label>Key</label>
-              <select id="keySel"><option>A</option><option>Bb</option><option>B</option><option>C</option><option>Db</option><option>D</option><option>Eb</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>Ab</option></select>
-            </div>
-            <div>
-              <label>Scale / Mode</label>
-              <select id="modeSel"><option value="mixolydian">Mixolydian</option><option value="ionian">Ionian</option><option value="dorian">Dorian</option><option value="phrygian">Phrygian</option><option value="lydian">Lydian</option><option value="aeolian">Aeolian</option><option value="locrian">Locrian</option><option value="pentMinor">Pentatonic</option><option value="blues">Blues</option></select>
-            </div>
-          </div>
-
-          <div class="row" style="margin-top:8px">
-            <div>
-              <label>Style</label>
-              <select id="styleSel"><option>Rock</option><option>Blues</option><option>Jazz</option><option>Classical</option><option>Metal</option><option>Funk</option></select>
-            </div>
-            <div>
-              <label>Instrument</label>
-              <select id="instrumentSel">
-                <option value="piano">Piano</option>
-                <option value="violin">Violin</option>
-                <option value="electric">Electric Guitar</option>
-                <option value="acoustic">Acoustic Guitar</option>
-                <option value="sax">Saxophone</option>
-                <option value="default">Synth (fallback)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="row3" style="margin-top:8px">
-            <div>
-              <label>Contour</label>
-              <select id="contourSel"><option value="random">Random</option><option value="ascending">Ascending</option><option value="descending">Descending</option><option value="scalar">Mostly scalar</option></select>
-            </div>
-            <div>
-              <label>Position (fret)</label>
-              <input type="number" id="posFret" min="1" max="12" value="5" />
-            </div>
-            <div>
-              <label>Bars</label>
-              <select id="barsSel"><option>1</option><option selected>2</option><option>4</option></select>
-            </div>
-          </div>
-
-          <div class="row" style="margin-top:8px">
-            <div>
-              <label>Tempo: <span id="tempoVal">100</span> BPM</label>
-              <input type="range" id="tempo" min="60" max="160" value="100" />
-            </div>
-            <div>
-              <label>Difficulty: <span id="diffVal">2</span>/5</label>
-              <input type="range" id="difficulty" min="1" max="5" value="2" />
-            </div>
-          </div>
-
-          <div class="row" style="margin-top:8px">
-            <div>
-              <label>Scalarity (stepwise ↔ leapy)</label>
-              <input type="range" id="scalarity" min="0" max="100" value="60" />
-            </div>
-            <div>
-              <label>Slurs / Legato</label>
-              <select id="slurSel"><option value="off">Off</option><option value="light" selected>Light</option><option value="heavy">Heavy</option></select>
-            </div>
-          </div>
-
-          <div class="btnbar">
-            <button id="genBtn" class="primary">Generate Lick</button>
-            <button id="playBtn">Play</button>
-            <button id="slowBtn">Play Slow</button>
-            <button id="revealBtn" class="ghost">Reveal Tab</button>
-            <button id="saveBtn" class="ghost">Save</button>
-          </div>
-
-          <!-- Meta + Status (needed by the script) -->
-          <div id="meta" style="margin-top:12px"></div>
-          <div style="margin-top:8px"><div class="pill" id="status">Ready. Stay in ear mode until you're stuck; then reveal.</div></div>
-
-          <div style="margin-top:12px" class="statusRow">
-            <div class="gameHUD">
-              <div class="badge">Level: <span id="level">1</span></div>
-              <div class="badge">XP: <span id="xp">0</span></div>
-              <div class="badge">Lives: <span id="lives">3</span></div>
-            </div>
-            <div style="margin-left:auto" class="small">Arcade Mode: <button id="startGame" class="primary">Start Survival</button> <button id="stopGame" class="ghost">Stop</button></div>
-          </div>
-
-          <div style="margin-top:10px" class="small">Achievements: <span id="achievements">None</span></div>
-
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Playback & Tab</h2>
-        <div class="tabbox" style="margin-top:8px"><pre id="tabTxt">(tab hidden – press Reveal)</pre></div>
-        <div class="btnbar" style="margin-top:10px">
-          <button id="callBtn" class="primary">Call & Response</button>
-          <button id="scoreBtn" class="ghost">Show Last Score</button>
-          <button id="exportPdf" class="ghost">Export Tab (Print/PDF)</button>
-          <button id="copyTab" class="ghost">Copy Tab</button>
-        </div>
-        <div style="margin-top:10px;color:var(--muted);font-size:13px">Tip: Use Call & Response to test yourself — the app will listen and score pitch & rhythm.</div>
-      </div>
+  <h1>🎸 Lick Generator</h1>
+  <div class="controls">
+    <div class="slider card">
+      <label for="lengthSlider">Length</label>
+      <input id="lengthSlider" type="range" min="3" max="12" value="6" />
     </div>
-
-    <div class="card" style="margin-top:16px">
-      <h2>Saved Licks & Bank</h2>
-      <div id="bank" style="margin-top:8px"></div>
+    <div class="slider card">
+      <label for="tempoSlider">Tempo (BPM)</label>
+      <input id="tempoSlider" type="range" min="60" max="180" value="100" />
     </div>
-
-    <div class="footer">Ear first, fingers second. — Built for practice & fun</div>
   </div>
+  <button id="playButton">▶️ Play Lick</button>
+  <pre id="tabOutput" class="card" style="margin-top: 2rem; white-space: pre-wrap;"></pre>
 
-<script>
-// -----------------------------
-// WebAudio helpers (native) + sample-based sampler (streamed on demand)
-// -----------------------------
-let audioCtx = null; let masterGain = null;
-async function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if(!masterGain){ masterGain = audioCtx.createGain(); masterGain.gain.value = 0.95; masterGain.connect(audioCtx.destination);} if(audioCtx.state==='suspended') await audioCtx.resume(); }
+  <script>
+    const playButton = document.getElementById('playButton');
+    const lengthSlider = document.getElementById('lengthSlider');
+    const tempoSlider = document.getElementById('tempoSlider');
+    const tabOutput = document.getElementById('tabOutput');
 
-function midiToFreq(m){ return 440 * Math.pow(2, (m - 69) / 12); }
-function midiToNoteName(m){ const names = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B']; const pc = names[(m%12+12)%12]; const oct = Math.floor(m/12)-1; return `${pc}${oct}`; }
+    const notes = ['E3','F3','G3','A3','B3','C4','D4','E4','F4','G4','A4','B4','C5'];
 
-// sample base URLs (user can edit these to point at a sample hosting)
-const SAMPLE_BASE = {
-  piano: 'https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/piano-mp3',
-  violin: 'https://example.com/samples/violin',
-  electric: 'https://example.com/samples/electric',
-  acoustic: 'https://example.com/samples/acoustic',
-  sax: 'https://example.com/samples/sax'
-};
-
-// sampler cache
-const sampler = {};
-function sampleUrlFor(instrument, noteName){ // tries common patterns
-  // many public soundfont hosts name files like Piano.ff.C4.mp3 — but hosts vary.
-  // We'll try a few likely patterns; if none work, fetch will fail and we'll fallback.
-  const base = SAMPLE_BASE[instrument]; if(!base) return null;
-  // patterns to try (in order)
-  const patterns = [
-    `${base}/${instrument}.mp3`, // fallback single-file
-    `${base}/${noteName}.mp3`,
-    `${base}/${instrument}.${noteName}.mp3`,
-    `${base}/${instrument}-${noteName}.mp3`,
-    `${base}/${instrument}_mp3-${noteName}.mp3`,
-    `${base}/${noteName}.wav`
-  ];
-  return patterns; // return array of candidates
-}
-
-async function loadSample(instrument, midi){
-  sampler[instrument] = sampler[instrument] || new Map();
-  const map = sampler[instrument];
-  if(map.has(midi)) return map.get(midi);
-  const noteName = midiToNoteName(midi);
-  const candidates = sampleUrlFor(instrument, noteName);
-  if(!candidates) return null;
-  for(const url of candidates){
-    try{
-      const res = await fetch(url);
-      if(!res.ok) continue;
-      const arr = await res.arrayBuffer();
-      const buf = await audioCtx.decodeAudioData(arr.slice(0));
-      map.set(midi, buf);
-      console.log('Loaded sample', instrument, midi, url);
-      return buf;
-    }catch(e){ /* try next */ }
-  }
-  // failed
-  map.set(midi, null);
-  console.warn('Failed to load sample for', instrument, noteName, candidates);
-  return null;
-}
-
-async function playSample(instrument, midi, start, dur, vel=0.8, humanize=true){
-  if(!audioCtx) return;
-  const buf = await loadSample(instrument, midi);
-  if(!buf) return null;
-  const src = audioCtx.createBufferSource(); src.buffer = buf;
-
-  // small pitch detune (cents) and playbackRate
-  const cents = humanize? (Math.random()*30 - 15):0; // +/-15 cents
-  src.playbackRate.value = Math.pow(2, cents/1200);
-
-  // small vibrato: modulate playbackRate with an LFO for string/pad instruments
-  let lfo=null, lfoGain=null;
-  if(humanize && (instrument==='violin' || instrument==='electric' || instrument==='acoustic')){
-    lfo = audioCtx.createOscillator(); lfo.frequency.value = 5 + Math.random()*3; // 5-8Hz
-    lfoGain = audioCtx.createGain(); lfoGain.gain.value = 0.002 + Math.random()*0.0015; // tiny
-    lfo.connect(lfoGain);
-    lfoGain.connect(src.playbackRate);
-    lfo.start();
-  }
-
-  const gain = audioCtx.createGain(); gain.gain.value = vel * (0.85 + Math.random()*0.3);
-  // slight lowpass to emulate body
-  const filter = audioCtx.createBiquadFilter(); filter.type='lowpass'; filter.frequency.value = instrument==='piano'?6000: (instrument==='violin'?7000:5000);
-  src.connect(filter); filter.connect(gain); gain.connect(masterGain);
-
-  src.start(start);
-  src.stop(start + dur + 0.1);
-
-  // stop LFO after
-  if(lfo){ setTimeout(()=>{ try{ lfo.stop(); lfo.disconnect(); lfoGain.disconnect(); }catch(e){} }, Math.max(200, (dur+0.2)*1000)); }
-  return true;
-}
-
-// fallback synth note (used when sample missing)
-function playFallback(freq, start, dur, vel=0.6, instr='default', legato=false){ if(!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const filter = audioCtx.createBiquadFilter(); filter.type='lowpass'; filter.frequency.value = instr==='metal'?4000:4500; if(instr==='classical') osc.type='sine'; else if(instr==='acoustic') osc.type='triangle'; else if(instr==='metal') osc.type='square'; else osc.type='sawtooth'; let out = filter; gain.connect(filter); filter.connect(masterGain); osc.frequency.value = freq; const attack = legato? 0.006:0.01; const release = 0.06 + Math.min(0.4, dur*0.2); gain.gain.setValueAtTime(0.0001, start); gain.gain.linearRampToValueAtTime(vel, start+attack); gain.gain.linearRampToValueAtTime(0.0001, start + dur + release); osc.connect(gain); osc.start(start); osc.stop(start + dur + release + 0.02); }
-
-// -----------------------------
-// Existing music theory + mapping (unchanged)
-// -----------------------------
-const NOTE_NAMES = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
-const TUNING = ['E2','A2','D3','G3','B3','E4'];
-const MODES = { ionian:[0,2,4,5,7,9,11], dorian:[0,2,3,5,7,9,10], phrygian:[0,1,3,5,7,8,10], lydian:[0,2,4,6,7,9,11], mixolydian:[0,2,4,5,7,9,10], aeolian:[0,2,3,5,7,8,10], locrian:[0,1,3,5,6,8,10], pentMinor:[0,3,5,7,10], blues:[0,3,5,6,7,10] };
-function noteToMidi(name){ const m = name.match(/^([A-G](?:#|b)?)(-?\d)$/); if(!m) throw 'bad note:'+name; const pc=m[1], oct=+m[2]; let idx=NOTE_NAMES.indexOf(pc); if(idx<0){ const sharp={Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#'}[pc]; if(!sharp) throw 'bad pc:'+pc; idx=NOTE_NAMES.indexOf(sharp);} return idx + (oct+1)*12; }
-function keyRootMidi(key){ const idx = NOTE_NAMES.indexOf(key); return (idx<0?0:idx) + 48; }
-const STRING_OPEN_MIDI = TUNING.map(noteToMidi);
-function buildScaleSet(key, mode, lo=40, hi=83){ const root = keyRootMidi(key); const degrees = MODES[mode] || MODES.pentMinor; const set=[]; for(let m=lo;m<=hi;m++){ const rel=(m-root)%12; const r=(rel+12)%12; if(degrees.includes(r)) set.push(m);} return set; }
-
-function bestStringFretForMidi(midi, last, pos=5){ const cands=[]; const window=4; for(let s=1;s<=6;s++){ const open = STRING_OPEN_MIDI[6-s]; const fret = midi - open; if(fret>=0 && fret<=24){ if(Math.abs(fret - pos) <= window+2) cands.push({string:s,fret,midi}); } } if(!cands.length){ for(let s=1;s<=6;s++){ const open = STRING_OPEN_MIDI[6-s]; const fret = midi - open; if(fret>=0 && fret<=24) cands.push({string:s,fret,midi}); } } cands.sort((a,b)=>{ const da = Math.abs(a.fret-pos) + (last? (Math.abs(a.fret-last.fret)*0.7 + Math.abs(a.string-last.string)*1.1):0); const db = Math.abs(b.fret-pos) + (last? (Math.abs(b.fret-last.fret)*0.7 + Math.abs(b.string-last.string)*1.1):0); return da-db; }); return cands[0] || {string:1,fret:pos,midi}; }
-function mapSeqToPosition(seq,pos){ const mapped=[]; let last=null; for(const n of seq){ const cand = bestStringFretForMidi(n.midi,last,pos); mapped.push({...n,string:cand.string,fret:cand.fret}); last=cand; } return mapped; }
-function renderTab(mapped){ const lines=["e|","B|","G|","D|","A|","E|"]; for(const n of mapped){ const token = (n.tech==='h'?"h": n.tech==='p'?"p":"") + String(n.fret); const pad = Math.max(1, Math.round(n.dur*4)); for(let s=1;s<=6;s++){ if(s===n.string){ lines[6-s] += token + "-".repeat(Math.max(0, pad - String(n.fret).length)); } else { lines[6-s] += "-".repeat(pad + token.length - 1); } } } lines.forEach((_,i)=> lines[i] += "|"); return lines.join("\n"); }
-
-// -----------------------------
-// Lick generation (same logic)
-// -----------------------------
-let current = {seq:[], mapped:[], meta:{key:'A',mode:'mixolydian',style:'Rock',bpm:100,bars:2,pos:5}};
-function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-function roundTo(x,step){ return Math.round(x/step)*step; }
-function pickWeighted(pairs){ const sum = pairs.reduce((a,[,w])=>a+w,0); let r=Math.random()*sum; for(const [v,w] of pairs){ if((r-=w)<=0) return v; } return pairs[0][0]; }
-function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
-function styleDurations(style){ switch(style){ case 'Jazz': return [[0.5,0.5],[0.25,0.3],[0.75,0.1],[1.0,0.1]]; case 'Metal': return [[0.25,0.6],[0.5,0.3],[0.125,0.1]]; case 'Classical': return [[0.5,0.4],[0.25,0.3],[1.0,0.3]]; case 'Funk': return [[0.25,0.55],[0.5,0.35],[0.75,0.1]]; default: return [[0.5,0.45],[0.25,0.35],[0.75,0.08],[1.0,0.12]]; } }
-function chooseStep(contour, scalarity, diff){ const stepBias = (scalarity>=50)?[-1,-1,0,0,1,1]:[-2,-1,0,1,2,(diff>3?3:-2)]; let step = pick(stepBias); if(contour==='ascending') step = Math.max(1, step); if(contour==='descending') step = Math.min(-1, step); if(contour==='scalar') step = clamp(step, -1, 1); if(Math.random()<0.05 && diff>=4) step += (Math.random()<0.5?+4:-4); return step; }
-function nearestIndexToFret(scaleSet, posFret){ let bestI=0,bestD=1e9; for(let i=0;i<scaleSet.length;i++){ const cand = bestStringFretForMidi(scaleSet[i], {string:3,fret:posFret}); const d = Math.abs(cand.fret - posFret); if(d<bestD){bestD=d; bestI=i}} return bestI; }
-
-function generateLick(){ const key = gid('keySel').value || 'A'; const mode = gid('modeSel').value; const style = gid('styleSel').value; const bars = +gid('barsSel').value; const diff = +gid('difficulty').value; const contour = gid('contourSel').value; const scalarity = +gid('scalarity').value; const pos = clamp(+gid('posFret').value,1,12); const slurMode = gid('slurSel').value; const styleDefault = {Blues:{mode:'blues'},Rock:{mode:'mixolydian'},Metal:{mode:'phrygian'},Jazz:{mode:'dorian'},Classical:{mode:'aeolian'},Funk:{mode:'mixolydian'}}[style] || {}; const useMode = (['pentMinor','blues'].includes(mode) ? mode : (mode || styleDefault.mode || 'mixolydian')); const scaleSet = buildScaleSet(key, useMode, 40, 83); const notesPerBar = {1:4,2:6,3:8,4:10,5:12}[diff] || 6; const totalNotes = Math.max(4, Math.round(notesPerBar*bars)); let idx = nearestIndexToFret(scaleSet, pos); const seq = []; let lastMidi = scaleSet[idx] || scaleSet[0]; for(let i=0;i<totalNotes;i++){ let step = chooseStep(contour, scalarity, diff); idx = clamp(idx + step, 1, scaleSet.length-2); let midi = scaleSet[idx]; if(Math.random() < (diff>3?0.18:0.08)){ if(useMode === 'blues' && Math.random()<0.6) midi += (Math.random()<0.5?+1:-1); else if(Math.random()<0.4) midi += (Math.random()<0.5?+12:-12); } const pal = styleDurations(style); const dur = pickWeighted(pal); let tech = null; if(slurMode !== 'off' && Math.random() < (slurMode==='heavy'?0.5:0.25)){ if(midi>lastMidi && (midi-lastMidi)<=2) tech='h'; else if(midi<lastMidi && (lastMidi-midi)<=2) tech='p'; } seq.push({midi, dur, tech}); lastMidi = midi; } const targetBeats = (+gid('barsSel').value)*4; const totalBeats = seq.reduce((a,n)=>a+n.dur,0) || 1; const scaleDur = targetBeats / totalBeats; seq.forEach(n=> n.dur = Math.max(0.25, roundTo(n.dur*scaleDur, 0.25))); const mapped = mapSeqToPosition(seq, pos); current = {seq, mapped, meta:{key, mode:useMode, style, bpm:+gid('tempo').value || 100, bars:+gid('barsSel').value, pos}}; refreshMeta(); hideTab(); }
-
-// -----------------------------
-// Call & Response (intermediate detection: pitch + rhythm)
-// -----------------------------
-let mediaStream=null, analyser=null, micRunning=false;
-async function startCallAndResponse(){ if(!current.mapped?.length) return alert('Generate a lick first'); await ensureAudio(); // play the lick
- await play(current.mapped, current.meta.bpm);
- // then listen
- try{ mediaStream = await navigator.mediaDevices.getUserMedia({audio:true}); const src = audioCtx.createMediaStreamSource(mediaStream); analyser = audioCtx.createAnalyser(); analyser.fftSize = 2048; src.connect(analyser); micRunning = true; const statusEl = document.getElementById('status'); if(statusEl) statusEl.textContent = 'Listening...'; const score = await listenAndScore(current.mapped, current.meta.bpm); micRunning=false; if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); }
- const statusEl2 = document.getElementById('status'); if(statusEl2) statusEl2.textContent = `Score: ${Math.round(score.total)}% (Pitch ${Math.round(score.pitch)}% • Rhythm ${Math.round(score.rhythm)}%)`;
- // award XP and handle arcade
- handlePostScore(score);
- }catch(e){ alert('Mic failed: '+e.message); }
-}
-
-function stopMicro(){ micRunning=false; if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; } const statusEl = document.getElementById('status'); if(statusEl) statusEl.textContent='Ready.'; }
-
-async function listenAndScore(mapped, bpm){ // returns {pitch:%, rhythm:%, total:%}
-  const beat = 60/(bpm||100); const sampleWindow = beat * 1.1; // listen roughly per note
-  const maxNotes = mapped.length;
-  let pitchHits=0, rhythmHits=0;
-  for(let i=0;i<maxNotes;i++){
-    if(!micRunning) break;
-    const expected = mapped[i]; const expectedFreq = midiToFreq(expected.midi);
-    const startTime = audioCtx.currentTime; const endTime = startTime + expected.dur * beat * 1.15; // window
-    let bestHz=0, samples=0, heardOn=null;
-    while(audioCtx.currentTime < endTime && micRunning){ const buf = new Float32Array(analyser.fftSize); analyser.getFloatTimeDomainData(buf); const hz = autoCorrelate(buf, audioCtx.sampleRate); if(hz && hz>30 && hz<5000){ bestHz = hz; samples++; if(!heardOn) heardOn = audioCtx.currentTime; } await new Promise(r=>setTimeout(r, 60)); }
-    // evaluate pitch
-    let pitchOk=false; if(samples>0 && bestHz>0){ const cents = 1200 * Math.log2(bestHz/expectedFreq); if(Math.abs(cents) < 80) { pitchOk=true; pitchHits++; } }
-    // evaluate rhythm: if heardOn exists and within dur window
-    let rhythmOk=false; if(heardOn){ const offsetBeats = (heardOn - startTime) / beat; if(offsetBeats >= -0.4 && offsetBeats <= expected.dur+0.4) { rhythmOk = true; rhythmHits++; } }
-  }
-  const pitchPct = (pitchHits / maxNotes)*100; const rhythmPct = (rhythmHits / maxNotes)*100; const total = Math.round((pitchPct*0.6 + rhythmPct*0.4)); return {pitch:pitchPct, rhythm:rhythmPct, total}; }
-
-// -----------------------------
-// Arcade Survival & XP
-// -----------------------------
-let game = {running:false, level:1, xp:0, lives:3, achievements:[]};
-function startGame(){ game.running=true; game.level=1; game.xp=0; game.lives=3; updateHUD(); nextRound(); }
-function stopGame(){ game.running=false; const statusEl=document.getElementById('status'); if(statusEl) statusEl.textContent='Game stopped.'; }
-async function nextRound(){ if(!game.running) return; // generate a lick slightly harder with level
-  // tune parameters by level
-  gid('difficulty').value = clamp(1 + Math.floor(game.level/2),1,5); gid('posFret').value = clamp(3 + Math.floor(game.level/2),1,12); generateLick(); await play(current.mapped, current.meta.bpm); // now listen
-  const statusEl=document.getElementById('status'); if(statusEl) statusEl.textContent = 'Round: play it back!'; await ensureAudio(); try{ mediaStream = await navigator.mediaDevices.getUserMedia({audio:true}); const src = audioCtx.createMediaStreamSource(mediaStream); analyser = audioCtx.createAnalyser(); analyser.fftSize = 2048; src.connect(analyser); micRunning=true; const score = await listenAndScore(current.mapped, current.meta.bpm); micRunning=false; if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); }
-    const statusEl2=document.getElementById('status'); if(statusEl2) statusEl2.textContent = `Round score: ${score.total}%`;
-    if(score.total >= 65){ // pass threshold
-      game.xp += Math.round(score.total); game.level += (score.total>85?1:0); if(statusEl2) statusEl2.textContent += ' — Passed!';
-    } else { game.lives -= 1; if(statusEl2) statusEl2.textContent += ' — Missed!'; }
-    checkAchievements(); updateHUD(); if(game.lives <=0){ game.running=false; if(statusEl2) statusEl2.textContent = 'Game over — you ran out of lives.'; }
-    else if(game.running) setTimeout(()=> nextRound(), 900);
-  }catch(e){ const statusEl3=document.getElementById('status'); if(statusEl3) statusEl3.textContent = 'Mic error: '+e.message; }
-}
-
-function handlePostScore(score){ // award xp outside game
-  const gained = Math.round(score.total); game.xp += gained; if(score.total > 80) game.level += 1; persistGame(); updateHUD(); checkAchievements(); }
-
-function updateHUD(){ const xpEl=gid('xp'), lvlEl=gid('level'), livesEl=gid('lives'), achEl=gid('achievements'); if(xpEl) xpEl.textContent = game.xp; if(lvlEl) lvlEl.textContent = game.level; if(livesEl) livesEl.textContent = game.lives; if(achEl) achEl.textContent = game.achievements.length? game.achievements.join(', '): 'None'; }
-
-function checkAchievements(){ if(game.xp > 500 && !game.achievements.includes('500 XP')) game.achievements.push('500 XP'); if(game.level >=5 && !game.achievements.includes('Level 5')) game.achievements.push('Level 5'); if(game.lives===3 && !game.achievements.includes('Untouched')) game.achievements.push('Untouched'); persistGame(); updateHUD(); }
-
-function persistGame(){ localStorage.setItem('earlick_game', JSON.stringify(game)); }
-function loadGame(){ const g = JSON.parse(localStorage.getItem('earlick_game')||'null'); if(g){ game=g; updateHUD(); } }
-
-// -----------------------------
-// Playback function (uses sampler when possible, otherwise fallback synth)
-// -----------------------------
-async function play(mapped, bpm, rate=1.0){ if(!mapped?.length) return; await ensureAudio(); const instrument = gid('instrumentSel')?.value || 'default'; const beat = 60/(bpm||100)*rate; let now = audioCtx.currentTime + 0.08; const swing = gid('styleSel').value === 'Jazz'; for(let i=0;i<mapped.length;i++){ const n = mapped[i]; const t = now; now += n.dur * beat; // humanize timing
-    const jitter = (Math.random()*40 - 20)/1000; // +/-20ms
-    let start = t + jitter; if(swing && (i%2===1)) start += 0.06; const durSec = Math.max(0.08, n.dur * beat * 0.92); const vel = 0.22 + Math.random()*0.4; const leg = (n.tech==='h' || n.tech==='p'); // try sample
-    const loaded = await playSample(instrument, n.midi, start, durSec, vel, true).catch(()=>null);
-    if(!loaded){ // fallback
-      playFallback(midiToFreq(n.midi), start, durSec, vel, instrument, leg);
+    function generateLick() {
+      const len = parseInt(lengthSlider.value);
+      let lick = [];
+      for (let i = 0; i < len; i++) {
+        lick.push(notes[Math.floor(Math.random() * notes.length)]);
+      }
+      return lick;
     }
-  } }
 
-// -----------------------------
-// Saved bank (tab export via print)
-// -----------------------------
-let bank = JSON.parse(localStorage.getItem('earlick_bank')||'[]');
-function persistBank(){ localStorage.setItem('earlick_bank', JSON.stringify(bank)); }
-function renderBank(){ const el = gid('bank'); if(!el) return; el.innerHTML=''; if(!bank.length){ el.innerHTML='<div style="color:var(--muted)">No saved licks yet.</div>'; return; } bank.forEach((it,i)=>{ const div=document.createElement('div'); div.className='bankItem'; div.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;color:var(--muted)">${i+1}. ${it.meta.key} ${it.meta.mode} • ${it.meta.style} • pos ${it.meta.pos}</div><div style="display:flex;gap:8px"><button data-i="${i}" class="playSaved">Play</button><button data-i="${i}" class="revealSaved ghost">Reveal</button><button data-i="${i}" class="copySaved ghost">Copy Tab</button><button data-i="${i}" class="delSaved warn">Delete</button></div></div><pre style="margin-top:8px;white-space:pre-wrap">${it.tab}</pre>`; el.appendChild(div); }); el.querySelectorAll('.playSaved').forEach(b=> b.onclick = async e=>{ const i=+e.target.dataset.i; await play(bank[i].mapped, bank[i].meta.bpm||+gid('tempo').value); }); el.querySelectorAll('.revealSaved').forEach(b=> b.onclick = e=>{ const i=+e.target.dataset.i; gid('tabTxt').textContent = bank[i].tab; }); el.querySelectorAll('.copySaved').forEach(b=> b.onclick = e=>{ const i=+e.target.dataset.i; navigator.clipboard?.writeText(bank[i].tab); }); el.querySelectorAll('.delSaved').forEach(b=> b.onclick = e=>{ const i=+e.target.dataset.i; bank.splice(i,1); persistBank(); renderBank(); }); }
+    function playLick(lick) {
+      const synth = new Tone.Sampler({
+        urls: {
+          A4: "A4.mp3",
+          C5: "C5.mp3",
+        },
+        baseUrl: "https://tonejs.github.io/audio/salamander/",
+      }).toDestination();
 
-// -----------------------------
-// UI utils
-// -----------------------------
-function gid(id){ return document.getElementById(id); }
-function on(id,ev,fn){ const el=gid(id); if(el) el.addEventListener(ev,fn); }
-function refreshMeta(){ const m=current.meta||{}; const metaEl = gid('meta'); if(metaEl) metaEl.innerHTML = `<span class="pill">Key: ${m.key||'A'}</span><span class="pill">Mode: ${m.mode||'mixolydian'}</span><span class="pill">Style: ${m.style||'Rock'}</span><span class="pill">${m.bpm||100} BPM</span><span class="pill">${m.bars||2} bars</span><span class="pill">pos ${m.pos||5}</span>`; }
-function hideTab(){ const t = gid('tabTxt'); if(t) t.textContent='(tab hidden – press Reveal)'; }
-function showTab(){ const t = gid('tabTxt'); if(t && current?.mapped) t.textContent = renderTab(current.mapped); }
+      Tone.Transport.bpm.value = parseInt(tempoSlider.value);
+      let time = 0;
+      lick.forEach(note => {
+        synth.triggerAttackRelease(note, "8n", Tone.now() + time);
+        time += 0.5;
+      });
 
-// -----------------------------
-// Wiring UI
-// -----------------------------
-on('genBtn','click', ()=>{ generateLick(); const m=gid('meta'); if(m) flash(m); });
-on('playBtn','click', async ()=>{ if(!current.seq.length) generateLick(); await play(current.mapped, +gid('tempo').value || current.meta.bpm); });
-on('slowBtn','click', async ()=>{ if(!current.seq.length) generateLick(); await play(current.mapped, +gid('tempo').value || current.meta.bpm, 1.25); });
-on('revealBtn','click', ()=> showTab());
-on('saveBtn','click', ()=>{ if(!current?.mapped?.length) return; const tab = renderTab(current.mapped); bank.push({mapped: current.mapped, meta: current.meta, tab}); persistBank(); renderBank(); });
-on('copyTab','click', ()=>{ if(!current?.mapped?.length) return; navigator.clipboard?.writeText(renderTab(current.mapped)); });
-on('callBtn','click', ()=> startCallAndResponse());
-on('scoreBtn','click', ()=> { const s = gid('status'); if(s) alert(s.textContent); });
-on('exportPdf','click', ()=> window.print());
-on('startGame','click', ()=>{ startGame(); });
-on('stopGame','click', ()=>{ stopGame(); });
+      // Generate a fake “tab” display
+      const tab = lick.map(n => `${n}—`).join(' ');
+      tabOutput.innerHTML = `TAB:\n${tab}`;
+    }
 
-on('tempo','input', ()=> { const t = gid('tempoVal'); if(t) t.textContent = gid('tempo').value; });
-on('difficulty','input', ()=> { const d=gid('diffVal'); if(d) d.textContent = gid('difficulty').value; });
-
-function flash(el){ if(!el) return; el.style.opacity='0.6'; setTimeout(()=> el.style.opacity='1',160); }
-
-// achievements / game load
-loadGame(); renderBank(); generateLick();
-</script>
+    playButton.addEventListener('click', async () => {
+      await Tone.start();
+      console.log('Audio context started');
+      const lick = generateLick();
+      playLick(lick);
+    });
+  </script>
 </body>
 </html>
