@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EarLick Studio (Clean SoundFont Version)</title>
+  <style>
+    body{margin:0;font-family:Inter,system-ui;background:#07070b;color:#e9f2ff}
+    header{text-align:center;padding:30px 0 10px}
+    h1{margin:0;font-size:30px}
+    .sub{color:#98a6d8;font-size:13px;margin-top:6px}
+    .container{max-width:1100px;margin:20px auto;padding:0 16px}
+    .grid{display:grid;grid-template-columns:360px 1fr;gap:16px}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{background:#0b0f1a;border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,0.05);box-shadow:0 10px 25px rgba(0,0,0,.5)}
+    h2{color:#7cc7ff;font-size:16px;margin-top:0}
+    label{display:block;font-size:12px;color:#98a6d8;margin-bottom:4px}
+    select,input[type=range],input[type=number]{width:100%;padding:7px;border-radius:8px;background:#081125;color:#e9f2ff;border:1px solid #20365f}
+    button{background:#122344;color:#fff;border:none;padding:10px 12px;border-radius:10px;font-weight:600;cursor:pointer}
+    button.primary{background:#1aa26a}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .pill{display:inline-block;background:rgba(255,255,255,0.05);padding:5px 10px;border-radius:999px;font-size:12px;margin-right:4px}
+    pre{white-space:pre;overflow:auto;background:#08122a;padding:10px;border-radius:10px;font-size:12px;margin:0}
+    .footer{text-align:center;color:#98a6d8;font-size:12px;padding:12px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎸 EarLick Studio</h1>
+    <div class="sub">Now with clean, realistic SoundFont instruments</div>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <div class="card">
+        <h2>Generator</h2>
+        <div class="row">
+          <div><label>Key</label><select id="keySel"><option>A</option><option>Bb</option><option>B</option><option>C</option><option>Db</option><option>D</option><option>Eb</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>Ab</option></select></div>
+          <div><label>Mode</label><select id="modeSel"><option>mixolydian</option><option>ionian</option><option>dorian</option><option>phrygian</option><option>lydian</option><option>aeolian</option><option>pentMinor</option><option>blues</option></select></div>
+        </div>
+        <div class="row"><div><label>Style</label><select id="styleSel"><option>Rock</option><option>Blues</option><option>Jazz</option><option>Metal</option><option>Funk</option><option>Classical</option></select></div>
+        <div><label>Instrument</label><select id="instrumentSel"><option value="acoustic_guitar_steel">Acoustic Guitar</option><option value="electric_guitar_clean">Electric Guitar</option><option value="piano">Piano</option><option value="violin">Violin</option><option value="alto_sax">Saxophone</option></select></div></div>
+        <div class="row"><div><label>Tempo <span id="tempoVal">100</span> BPM</label><input type="range" id="tempo" min="60" max="160" value="100"></div>
+        <div><label>Difficulty <span id="diffVal">2</span>/5</label><input type="range" id="difficulty" min="1" max="5" value="2"></div></div>
+        <div class="row"><div><label>Scalarity (stepwise↔leapy)</label><input type="range" id="scalarity" min="0" max="100" value="60"></div>
+        <div><label>Notes per Bar <span id="notesPerBarVal">6</span></label><input type="range" id="notesPerBar" min="4" max="12" value="6"></div></div>
+        <button id="genBtn" class="primary">Generate Lick</button>
+        <button id="playBtn">Play</button>
+        <button id="revealBtn">Reveal Tab</button>
+        <div id="meta" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card">
+        <h2>Tab</h2>
+        <pre id="tabTxt">(tab hidden)</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Dry studio mix • Powered by soundfont-player • v2</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/soundfont-player@0.15.7/dist/soundfont-player.min.js"></script>
+  <script>
+  // ----------------------------
+  // Audio setup (clean SoundFont)
+  // ----------------------------
+  let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  let currentInstrument = null;
+
+  async function loadInstrument(name){
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    currentInstrument = await Soundfont.instrument(audioCtx, name, { soundfont: 'MusyngKite' });
+  }
+
+  // ----------------------------
+  // Helpers
+  // ----------------------------
+  const NOTE_NAMES = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+  const MODES = {
+    ionian:[0,2,4,5,7,9,11],
+    dorian:[0,2,3,5,7,9,10],
+    phrygian:[0,1,3,5,7,8,10],
+    lydian:[0,2,4,6,7,9,11],
+    mixolydian:[0,2,4,5,7,9,10],
+    aeolian:[0,2,3,5,7,8,10],
+    pentMinor:[0,3,5,7,10],
+    blues:[0,3,5,6,7,10]
+  };
+  function keyRootMidi(key){return NOTE_NAMES.indexOf(key)+48;}
+  function buildScaleSet(key,mode,lo=40,hi=83){
+    const root=keyRootMidi(key);const deg=MODES[mode]||MODES.mixolydian;const set=[];
+    for(let m=lo;m<=hi;m++){const rel=(m-root)%12;const r=(rel+12)%12;if(deg.includes(r))set.push(m);}
+    return set;
+  }
+  function midiToFreq(m){return 440*Math.pow(2,(m-69)/12);}
+  function midiToNoteName(m){const n=NOTE_NAMES[(m%12+12)%12];const o=Math.floor(m/12)-1;return n+o;}
+
+  // ----------------------------
+  // Lick generation
+  // ----------------------------
+  let current = {seq:[],meta:{}};
+  function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+  function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+  function generateLick(){
+    const key=document.getElementById('keySel').value;
+    const mode=document.getElementById('modeSel').value;
+    const style=document.getElementById('styleSel').value;
+    const diff=+document.getElementById('difficulty').value;
+    const scalarity=+document.getElementById('scalarity').value;
+    const notesPerBar=+document.getElementById('notesPerBar').value;
+    const tempo=+document.getElementById('tempo').value;
+    const scale=buildScaleSet(key,mode);
+    let idx=Math.floor(scale.length/2);
+    const seq=[];
+    for(let i=0;i<notesPerBar*2;i++){
+      let step;
+      const leapBias=(100-scalarity)/100;
+      if(Math.random()<leapBias*0.3) step=pick([-7,-5,5,7,12,-12]);
+      else step=pick([-2,-1,1,2]);
+      idx=clamp(idx+step,0,scale.length-1);
+      seq.push({midi:scale[idx],dur:0.5});
+    }
+    current={seq,meta:{key,mode,style,tempo}};
+    document.getElementById('meta').innerHTML=
+      `<span class="pill">${key} ${mode}</span><span class="pill">${style}</span><span class="pill">${tempo} bpm</span>`;
+    document.getElementById('tabTxt').textContent="(tab hidden)";
+  }
+
+  // ----------------------------
+  // Playback
+  // ----------------------------
+  async function playLick(){
+    if(!current.seq.length) generateLick();
+    const instName=document.getElementById('instrumentSel').value;
+    if(!currentInstrument || currentInstrument.name!==instName){
+      await loadInstrument(instName);
+    }
+    const bpm=current.meta.tempo||100;
+    const beat=60/bpm;
+    let t=audioCtx.currentTime+0.05;
+    for(const n of current.seq){
+      currentInstrument.play(midiToNoteName(n.midi),t,{gain:0.7,duration:n.dur*beat});
+      t+=n.dur*beat;
+    }
+  }
+
+  // ----------------------------
+  // Tab rendering (simplified)
+  // ----------------------------
+  function renderTab(){
+    const lines=["e|","B|","G|","D|","A|","E|"];
+    let pos=5;
+    for(const n of current.seq){
+      const fret=((n.midi-40)%12);
+      const pad=Math.round(n.dur*4);
+      for(let s=0;s<6;s++){
+        lines[s]+= (s===0?fret:"-").toString().padEnd(pad,"-");
+      }
+    }
+    return lines.join("\n");
+  }
+
+  // ----------------------------
+  // Events
+  // ----------------------------
+  document.getElementById('genBtn').onclick=generateLick;
+  document.getElementById('playBtn').onclick=playLick;
+  document.getElementById('revealBtn').onclick=()=> {
+    document.getElementById('tabTxt').textContent=renderTab();
+  };
+  document.getElementById('tempo').oninput=e=>document.getElementById('tempoVal').textContent=e.target.value;
+  document.getElementById('difficulty').oninput=e=>document.getElementById('diffVal').textContent=e.target.value;
+  document.getElementById('notesPerBar').oninput=e=>document.getElementById('notesPerBarVal').textContent=e.target.value;
+
+  // initial instrument
+  loadInstrument('acoustic_guitar_steel');
+  </script>
+</body>
+</html>
