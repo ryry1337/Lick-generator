@@ -67,12 +67,7 @@ pre{margin:0;font-size:12px;color:#dfe9ff;overflow:auto;white-space:pre}
 <div>
 <label>Instrument</label>
 <select id="instrumentSel">
-<option value="piano">Piano</option>
-<option value="violin">Violin</option>
-<option value="electric">Electric Guitar</option>
-<option value="acoustic">Acoustic Guitar</option>
-<option value="sax">Saxophone</option>
-<option value="default">Synth (fallback)</option>
+<option value="piano" selected>Piano</option>
 </select>
 </div>
 </div>
@@ -116,12 +111,12 @@ pre{margin:0;font-size:12px;color:#dfe9ff;overflow:auto;white-space:pre}
 
 <div class="row" style="margin-top:8px">
 <div>
-<label>Notes per bar</label>
-<input type="number" id="notesPerBar" min="4" max="12" value="6" />
+<label>Notes per Bar</label>
+<input type="range" id="notesPerBar" min="4" max="12" value="6" />
 </div>
 <div>
-<label>Max repeats in a row</label>
-<input type="range" id="maxRepeats" min="1" max="4" value="2" />
+<label>Repeat Note Chance (%)</label>
+<input type="range" id="repeatChance" min="0" max="100" value="15" />
 </div>
 </div>
 
@@ -172,70 +167,54 @@ pre{margin:0;font-size:12px;color:#dfe9ff;overflow:auto;white-space:pre}
 </div>
 
 <script>
-// --- AUDIO CONTEXT & SAMPLE-BASED SAMPLER (UNCHANGED, WORKING) ---
+// ------------- Audio Setup -------------
 let audioCtx=null, masterGain=null;
 async function ensureAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(!masterGain){ masterGain=audioCtx.createGain(); masterGain.gain.value=0.95; masterGain.connect(audioCtx.destination);} if(audioCtx.state==='suspended') await audioCtx.resume(); }
-function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
-function midiToNoteName(m){ const names=['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B']; const pc=names[(m%12+12)%12]; const oct=Math.floor(m/12)-1; return `${pc}${oct}`; }
 
-const SAMPLE_BASE={
-piano:'https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/piano-mp3',
-violin:'https://example.com/samples/violin',
-electric:'https://example.com/samples/electric',
-acoustic:'https://example.com/samples/acoustic',
-sax:'https://example.com/samples/sax'
-};
+function midiToFreq(m){ return 440 * Math.pow(2,(m-69)/12); }
+function midiToNoteName(m){ const names=['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B']; return names[(m%12+12)%12]+(Math.floor(m/12)-1); }
 
+// Only piano sample to keep working
+const SAMPLE_BASE={ piano:'https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/piano-mp3' };
 const sampler={};
-function sampleUrlFor(instrument,noteName){
-const base=SAMPLE_BASE[instrument]; if(!base) return null;
-const patterns=[
-`${base}/${instrument}.mp3`,
-`${base}/${noteName}.mp3`,
-`${base}/${instrument}.${noteName}.mp3`,
-`${base}/${instrument}-${noteName}.mp3`,
-`${base}/${instrument}_mp3-${noteName}.mp3`,
-`${base}/${noteName}.wav`
-];
-return patterns;
-}
-
 async function loadSample(instrument,midi){
-sampler[instrument]=sampler[instrument]||new Map();
-const map=sampler[instrument];
-if(map.has(midi)) return map.get(midi);
-const noteName=midiToNoteName(midi);
-const candidates=sampleUrlFor(instrument,noteName);
-if(!candidates) return null;
-for(const url of candidates){
-try{
-const res=await fetch(url); if(!res.ok) continue;
-const arr=await res.arrayBuffer();
-const buf=await audioCtx.decodeAudioData(arr.slice(0));
-map.set(midi,buf);
-console.log('Loaded sample',instrument,midi,url);
-return buf;
-}catch(e){}
-}
-map.set(midi,null); console.warn('Failed to load sample for',instrument,noteName,candidates);
-return null;
+  sampler[instrument]=sampler[instrument]||new Map();
+  const map=sampler[instrument];
+  if(map.has(midi)) return map.get(midi);
+  const noteName=midiToNoteName(midi);
+  const url=`${SAMPLE_BASE[instrument]}/${noteName}.mp3`;
+  try{
+    const res=await fetch(url);
+    if(!res.ok) throw 'fail';
+    const arr=await res.arrayBuffer();
+    const buf=await audioCtx.decodeAudioData(arr.slice(0));
+    map.set(midi,buf);
+    return buf;
+  }catch(e){ map.set(midi,null); return null; }
 }
 
 async function playSample(instrument,midi,start,dur,vel=0.8,humanize=true){
-if(!audioCtx) return;
-const buf=await loadSample(instrument,midi);
-if(!buf) return null;
-const src=audioCtx.createBufferSource(); src.buffer=buf;
-const cents=humanize?(Math.random()*30-15):0;
-src.playbackRate.value=Math.pow(2,cents/1200);
-let lfo=null,lfoGain=null;
-if(humanize&&(instrument==='violin'||instrument==='electric'||instrument==='acoustic')){
-lfo=audioCtx.createOscillator(); lfo.frequency.value=5+Math.random()*3;
-lfoGain=audioCtx.createGain(); lfoGain.gain.value=0.002+Math.random()*0.0015;
-lfo.connect(lfoGain); lfoGain.connect(src.playbackRate); lfo.start();
+  if(!audioCtx) return;
+  const buf=await loadSample(instrument,midi);
+  if(!buf) return null;
+  const src=audioCtx.createBufferSource(); src.buffer=buf;
+  const cents=humanize? (Math.random()*30-15):0;
+  src.playbackRate.value=Math.pow(2,cents/1200);
+  const gain=audioCtx.createGain(); gain.gain.value=vel*(0.85+Math.random()*0.3);
+  const filter=audioCtx.createBiquadFilter(); filter.type='lowpass'; filter.frequency.value=6000;
+  src.connect(filter); filter.connect(gain); gain.connect(masterGain);
+  src.start(start); src.stop(start+dur+0.1);
+  return true;
 }
-const gain=audioCtx.createGain(); gain.gain.value=vel*(0.85+Math.random()*0.3);
-const filter=audioCtx.createBiquadFilter(); filter.type='lowpass'; filter.frequency.value=instrument==='piano'?6000:(instrument==='violin'?7000:5000);
-src.connect(filter); filter.connect(gain); gain.connect(masterGain);
-src.start(start); src.stop(start+dur+0.1);
-if(lfo){ setTimeout(()=>{try{lfo.stop(); lfo.disconnect(); lfoGain.disconnect();}catch(e){} }, Math.max(200,(dur+0.2)*100
+
+function playFallback(freq,start,dur,vel=0.6,instr='default',legato=false){
+  if(!audioCtx) return;
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  const filter=audioCtx.createBiquadFilter(); filter.type='lowpass'; filter.frequency.value=4500;
+  gain.connect(filter); filter.connect(masterGain); osc.connect(gain);
+  osc.frequency.value=freq;
+  const attack=legato?0.006:0.01; const release=0.06+Math.min(0.4,dur*0.2);
+  gain.gain.setValueAtTime(0.0001,start);
+  gain.gain.linearRampToValueAtTime(vel,start+attack);
+ 
