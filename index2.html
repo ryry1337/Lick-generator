@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EarLick – Pro Studio Guitar Ear Trainer</title>
+  <style>
+    :root{--bg:#07070b;--panel:#0b0f1a;--panel2:#0e1424;--card:#0d1626;--accent:#8ef5c3;--accent2:#7cc7ff;--muted:#98a6d8;--txt:#e9f2ff;--warn:#ffb86b}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg),#071022);color:var(--txt)}
+    header{padding:28px 16px 12px;text-align:center}
+    h1{margin:0;font-size:30px}
+    .sub{color:var(--muted);font-size:13px;margin-top:6px}
+    .container{max-width:1150px;margin:18px auto 48px;padding:0 18px}
+    .grid{display:grid;grid-template-columns:380px 1fr;gap:18px}
+    @media(max-width:980px){.grid{grid-template-columns:1fr}}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 30px rgba(0,0,0,.6)}
+    h2{color:var(--accent2);margin:0 0 10px;font-size:16px}
+    label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+    select,input[type=range],input[type=number]{width:100%;background:#081125;color:var(--txt);border:1px solid #17223d;border-radius:10px;padding:9px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .btnbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    button{background:linear-gradient(180deg,#122344,#0b1832);color:var(--txt);border:1px solid #20365f;padding:10px 12px;border-radius:12px;font-weight:700;cursor:pointer}
+    .primary{background:linear-gradient(180deg,var(--accent),#1aa26a);border-color:var(--accent);color:#052114}
+    .ghost{background:transparent;border:1px dashed #233455}
+    .pill{display:inline-block;background:rgba(255,255,255,0.02);color:var(--muted);padding:5px 10px;border-radius:999px;margin-right:8px;font-size:12px}
+    .tabbox{background:#07112a;border:1px solid #162644;border-radius:10px;padding:12px;font-family:ui-monospace,Menlo,Consolas,monospace}
+    pre{margin:0;font-size:12px;color:#dfe9ff;overflow:auto;white-space:pre}
+    .meter{height:12px;background:#07142b;border-radius:999px;overflow:hidden;border:1px solid #14243f}
+    .meter > div{height:100%;width:0%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .35s ease}
+    .bankItem{background:#08122a;border:1px solid #162644;border-radius:10px;padding:10px;margin-bottom:10px}
+    .statusRow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .small{font-size:12px;color:var(--muted)}
+    .gameHUD{display:flex;gap:12px;align-items:center}
+    .badge{background:rgba(255,255,255,0.02);padding:6px 10px;border-radius:8px;color:var(--muted);font-size:13px}
+    .footer{text-align:center;color:var(--muted);font-size:12px;padding:14px}
+    .controlRow{display:flex;gap:8px;align-items:center}
+    .smallMuted{font-size:11px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎸 EarLick Studio</h1>
+    <div class="sub">Pro Studio look • Real instrument samples streamed on demand • Call & Response • Game</div>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <div class="card">
+        <h2>Generator & Game</h2>
+        <div style="margin-top:6px">
+          <div class="row">
+            <div>
+              <label>Key</label>
+              <select id="keySel"><option>A</option><option>Bb</option><option>B</option><option>C</option><option>Db</option><option>D</option><option>Eb</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>Ab</option></select>
+            </div>
+            <div>
+              <label>Scale / Mode</label>
+              <select id="modeSel"><option value="mixolydian">Mixolydian</option><option value="ionian">Ionian</option><option value="dorian">Dorian</option><option value="phrygian">Phrygian</option><option value="lydian">Lydian</option><option value="aeolian">Aeolian</option><option value="locrian">Locrian</option><option value="pentMinor">Pentatonic</option><option value="blues">Blues</option></select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:8px">
+            <div>
+              <label>Style</label>
+              <select id="styleSel"><option>Rock</option><option>Blues</option><option>Jazz</option><option>Classical</option><option>Metal</option><option>Funk</option></select>
+            </div>
+            <div>
+              <label>Instrument</label>
+              <select id="instrumentSel">
+                <option value="piano">Piano</option>
+                <option value="violin">Violin</option>
+                <option value="electric">Electric Guitar</option>
+                <option value="acoustic">Acoustic Guitar</option>
+                <option value="sax">Saxophone</option>
+                <option value="default">Synth (fallback)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row3" style="margin-top:8px">
+            <div>
+              <label>Contour</label>
+              <select id="contourSel"><option value="random">Random</option><option value="ascending">Ascending</option><option value="descending">Descending</option><option value="scalar">Mostly scalar</option></select>
+            </div>
+            <div>
+              <label>Position (fret)</label>
+              <input type="number" id="posFret" min="1" max="12" value="5" />
+            </div>
+            <div>
+              <label>Bars</label>
+              <select id="barsSel"><option>1</option><option selected>2</option><option>4</option></select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:8px">
+            <div>
+              <label>Tempo: <span id="tempoVal">100</span> BPM</label>
+              <input type="range" id="tempo" min="60" max="160" value="100" />
+            </div>
+            <div>
+              <label>Difficulty: <span id="diffVal">2</span>/5</label>
+              <input type="range" id="difficulty" min="1" max="5" value="2" />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:8px">
+            <div>
+              <label>Scalarity (stepwise ↔ leapy)</label>
+              <input type="range" id="scalarity" min="0" max="100" value="60" />
+            </div>
+            <div>
+              <label>Slurs / Legato</label>
+              <select id="slurSel"><option value="off">Off</option><option value="light" selected>Light</option><option value="heavy">Heavy</option></select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:8px">
+            <div>
+              <label>Notes per Bar: <span id="notesPerBarVal">6</span></label>
+              <input type="range" id="notesPerBar" min="4" max="12" value="6" />
+            </div>
+            <div>
+              <label>Humanize Amount</label>
+              <input type="range" id="humanize" min="0" max="100" value="60" />
+            </div>
+          </div>
+
+          <div class="btnbar">
+            <button id="genBtn" class="primary">Generate Lick</button>
+            <button id="playBtn">Play</button>
+            <button id="slowBtn">Play Slow</button>
+            <button id="revealBtn" class="ghost">Reveal Tab</button>
+            <button id="saveBtn" class="ghost">Save</button>
+          </div>
+
+          <!-- Meta + Status (needed by the script) -->
+          <div id="meta" style="margin-top:12px"></div>
+          <div style="margin-top:8px"><div class="pill" id="status">Ready. Stay in ear mode until you're stuck; then reveal.</div></div>
+
+          <div style="margin-top:12px" class="statusRow">
+            <div class="gameHUD">
+              <div class="badge">Level: <span id="level">1</span></div>
+              <div class="badge">XP: <span id="xp">0</span></div>
+              <div class="badge">Lives: <span id="lives">3</span></div>
+            </div>
+            <div style="margin-left:auto" class="small">Arcade Mode: <button id="startGame" class="primary">Start Survival</button> <button id="stopGame" class="ghost">Stop</button></div>
+          </div>
+
+          <div style="margin-top:10px" class="small">Achievements: <span id="achievements">None</span></div>
+
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Playback & Tab</h2>
+        <div class="tabbox" style="margin-top:8px"><pre id="tabTxt">(tab hidden – press Reveal)</pre></div>
+        <div class="btnbar" style="margin-top:10px">
+          <button id="callBtn" class="primary">Call & Response</button>
+          <button id="scoreBtn" class="ghost">Show Last Score</button>
+          <button id="exportPdf" class="ghost">Export Tab (Print/PDF)</button>
+          <button id="copyTab" class="ghost">Copy Tab</button>
+        </div>
+        <div style="margin-top:10px;color:var(--muted);font-size:13px">Tip: Use Call & Response to test yourself — the app will listen and score pitch & rhythm.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Saved Licks & Bank</h2>
+      <div id="bank" style="margin-top:8px"></div>
+    </div>
+
+    <div class="footer">Ear first, fingers second. — Built for practice & fun</div>
+  </div>
+
+<script>
+// -----------------------------
+// WebAudio helpers (native) + sample-based sampler (streamed on demand)
+// -----------------------------
+let audioCtx = null;
+let masterGain = null;
+let reverbNode = null; // light ambient reverb
+let masterDryGain = null, masterWetGain = null;
+
+async function ensureAudio(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(!masterGain){
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.95;
+    masterDryGain = audioCtx.createGain(); masterWetGain = audioCtx.createGain();
+    masterDryGain.gain.value = 0.92;
+    masterWetGain.gain.value = 0.08;
+    // simple Schroeder-like reverb: three delays with feedback + lowpass
+    reverbNode = createSimpleReverb();
+    // routing: dry -> masterDryGain -> destination, wet -> reverb -> masterWetGain -> destination
+    masterDryGain.connect(audioCtx.destination);
+    reverbNode.output.connect(masterWetGain);
+    masterWetGain.connect(audioCtx.destination);
+    // also allow a final master gain (connect both)
+    // We'll connect sources to masterDryGain and also to reverbNode.input for wet signal.
+    masterGain.connect(masterDryGain);
+    masterGain.connect(reverbNode.input);
+    reverbNode.input.connect(masterGain); // reverb internal routing expects input connected
+  }
+  if(audioCtx.state === 'suspended') await audioCtx.resume();
+}
+
+// Simple reverb: create multiple parallel delays with feedback + lowpass; return {input, output}
+function createSimpleReverb(){
+  const input = audioCtx.createGain();
+  const output = audioCtx.createGain();
+  // three parallel delays
+  const delays = [0.020, 0.035, 0.055].map(t=>{
+    const d = audioCtx.createDelay(); d.delayTime.value = t;
+    const f = audioCtx.createBiquadFilter(); f.type='lowpass'; f.frequency.value = 4000;
+    const g = audioCtx.createGain(); g.gain.value = 0.35; // feedback
+    d.connect(f); f.connect(g); g.connect(d); // feedback loop
+    return {d,f,g};
+  });
+  // connect input to each delay and sum to output
+  delays.forEach(({d})=>{
+    input.connect(d);
+    d.connect(output);
+  });
+  // small diffusion: connect input directly to output lightly
+  input.connect(output);
+  // return a simple object
+  return {input, output};
+}
+
+// helper to connect both dry & wet in play paths
+function connectToMaster(node){
+  node.connect(masterGain); // dry path
+  // also feed a small amount to reverb input (wet)
+  node.connect(reverbNode.input, 0, 0);
+}
+
+// convert midi to frequency
+function midiToFreq(m){ return 440 * Math.pow(2, (m - 69) / 12); }
+function midiToNoteName(m){
+  const names = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+  const pc = names[(m%12+12)%12];
+  const oct = Math.floor(m/12)-1;
+  return `${pc}${oct}`;
+}
+
+// -----------------------------
+// Use public FluidR3_GM SoundFont xmp3 samples
+// (practical and works without a backend)
+const SAMPLE_BASE = {
+  piano: 'https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/piano-mp3',
+  violin: 'https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/violin-mp3',
+  electric: 'https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/electric_guitar_clean-mp3',
+  acoustic: 'https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/acoustic_guitar_steel-mp3',
+  sax: 'https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/alto_sax-mp3',
+  default: 'https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/synth_brass_1-mp3'
+};
+
+// sampler cache
+const sampler = {};
+function sampleUrlFor(instrument, noteName){
+  const base = SAMPLE_BASE[instrument] || SAMPLE_BASE.default;
+  // FluidR3 maps note names like "C4.mp3"
+  return [`${base}/${noteName}.mp3`];
+}
+
+async function loadSample(instrument, midi){
+  sampler[instrument] = sampler[instrument] || new Map();
+  const map = sampler[instrument];
+  if(map.has(midi)) return map.get(midi);
+  const noteName = midiToNoteName(midi);
+  const candidates = sampleUrlFor(instrument, noteName);
+  if(!candidates) { map.set(midi, null); return null; }
+  for(const url of candidates){
+    try{
+      const res = await fetch(url);
+      if(!res.ok) continue;
+      const arr = await res.arrayBuffer();
+      const buf = await audioCtx.decodeAudioData(arr.slice(0));
+      map.set(midi, buf);
+      console.log('Loaded sample', instrument, midi, url);
+      return buf;
+    }catch(e){
+      // try next
+    }
+  }
+  map.set(midi, null);
+  console.warn('Failed to load sample for', instrument, noteName);
+  return null;
+}
+
+// play a buffered sample with slight realism: pitch jitter, pan, velocity, body filter
+async function playSample(instrument, midi, start, dur, vel=0.8, humanize=0.6, legato=false){
+  if(!audioCtx) return;
+  const buf = await loadSample(instrument, midi);
+  if(!buf) return null;
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+
+  // humanize playback rate (cents)
+  const cents = (Math.random()*2 - 1) * 12 * humanize; // wider jitter if humanize large
+  src.playbackRate.value = Math.pow(2, cents/1200);
+
+  // amplitude dynamics
+  const gain = audioCtx.createGain();
+  // velocity randomization and subtle phrasing
+  const dyn = vel * (0.8 + (Math.random()*0.4 - 0.2) * humanize);
+  gain.gain.value = Math.max(0.02, dyn);
+
+  // body filter (lowpass) to vary tones slightly
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  // instrument-dependent tone
+  const baseFreq = instrument === 'piano' ? 7000 : (instrument==='violin'?6500:5000);
+  filter.frequency.value = Math.max(2000, baseFreq - Math.random()*2500*humanize);
+
+  // stereo pan for a bit of width
+  const pan = audioCtx.createStereoPanner();
+  pan.pan.value = (Math.random()*0.6 - 0.3) * humanize;
+
+  // envelope for a softer attack/release
+  const now = audioCtx.currentTime;
+  const attack = legato ? 0.008 : (0.01 + Math.random()*0.02*humanize);
+  const release = 0.06 + Math.min(0.5, dur * 0.2) + 0.02*humanize;
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.linearRampToValueAtTime(dyn, start + attack);
+  gain.gain.linearRampToValueAtTime(0.0001, start + dur + release);
+
+  src.connect(filter);
+  filter.connect(pan);
+  pan.connect(gain);
+
+  // connect to master (both dry + reverb)
+  connectToMaster(gain);
+
+  src.start(start);
+  src.stop(start + dur + release + 0.02);
+
+  return true;
+}
+
+// fallback synth note (used when sample missing)
+function playFallback(freq, start, dur, vel=0.6, instr='default', legato=false){
+  if(!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const filter = audioCtx.createBiquadFilter();
+  filter.type='lowpass';
+  filter.frequency.value = instr==='metal'?3500:4500;
+  if(instr==='classical') osc.type='sine';
+  else if(instr==='acoustic') osc.type='triangle';
+  else if(instr==='metal') osc.type='square';
+  else osc.type='sawtooth';
+  osc.frequency.value = freq;
+  // envelope
+  const attack = legato? 0.006:0.01;
+  const release = 0.06 + Math.min(0.4, dur*0.2);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.linearRampToValueAtTime(vel, start+attack);
+  gain.gain.linearRampToValueAtTime(0.0001, start + dur + release);
+  osc.connect(filter);
+  filter.connect(gain);
+  // slight stereo
+  const pan = audioCtx.createStereoPanner(); pan.pan.value = (Math.random()*0.6 - 0.3);
+  gain.connect(pan);
+  connectToMaster(pan);
+  osc.start(start);
+  osc.stop(start + dur + release + 0.02);
+}
+
+// -----------------------------
+// Music theory + mapping (unchanged mostly)
+// -----------------------------
+const NOTE_NAMES = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+const TUNING = ['E2','A2','D3','G3','B3','E4'];
+const MODES = {
+  ionian:[0,2,4,5,7,9,11],
+  dorian:[0,2,3,5,7,9,10],
+  phrygian:[0,1,3,5,7,8,10],
+  lydian:[0,2,4,6,7,9,11],
+  mixolydian:[0,2,4,5,7,9,10],
+  aeolian:[0,2,3,5,7,8,10],
+  locrian:[0,1,3,5,6,8,10],
+  pentMinor:[0,3,5,7,10],
+  blues:[0,3,5,6,7,10]
+};
+function noteToMidi(name){ const m = name.match(/^([A-G](?:#|b)?)(-?\d)$/); if(!m) throw 'bad note:'+name; const pc=m[1], oct=+m[2]; let idx=NOTE_NAMES.indexOf(pc); if(idx<0){ const sharp={Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#'}[pc]; if(!sharp) throw 'bad pc:'+pc; idx=NOTE_NAMES.indexOf(sharp);} return idx + (oct+1)*12; }
+function keyRootMidi(key){ const idx = NOTE_NAMES.indexOf(key); return (idx<0?0:idx) + 48; }
+const STRING_OPEN_MIDI = TUNING.map(noteToMidi);
+
+function buildScaleSet(key, mode, lo=40, hi=83){
+  const root = keyRootMidi(key);
+  const degrees = MODES[mode] || MODES.pentMinor;
+  const set=[];
+  for(let m=lo;m<=hi;m++){
+    const rel=(m-root)%12; const r=(rel+12)%12;
+    if(degrees.includes(r)) set.push(m);
+  }
+  return set;
+}
+
+function bestStringFretForMidi(midi, last, pos=5){
+  const cands=[]; const window=4;
+  for(let s=1;s<=6;s++){
+    const open = STRING_OPEN_MIDI[6-s];
+    const fret = midi - open;
+    if(fret>=0 && fret<=24){
+      if(Math.abs(fret - pos) <= window+2) cands.push({string:s,fret,midi});
+    }
+  }
+  if(!cands.length){
+    for(let s=1;s<=6;s++){
+      const open = STRING_OPEN_MIDI[6-s];
+      const fret = midi - open;
+      if(fret>=0 && fret<=24) cands.push({string:s,fret,midi});
+    }
+  }
+  cands.sort((a,b)=>{
+    const da = Math.abs(a.fret-pos) + (last? (Math.abs(a.fret-last.fret)*0.7 + Math.abs(a.string-last.string)*1.1):0);
+    const db = Math.abs(b.fret-pos) + (last? (Math.abs(b.fret-last.fret)*0.7 + Math.abs(b.string-last.string)*1.1):0);
+    return da-db;
+  });
+  return cands[0] || {string:1,fret:pos,midi};
+}
+function mapSeqToPosition(seq,pos){ const mapped=[]; let last=null; for(const n of seq){ const cand = bestStringFretForMidi(n.midi,last,pos); mapped.push({...n,string:cand.string,fret:cand.fret}); last=cand; } return mapped; }
+function renderTab(mapped){
+  const lines=["e|","B|","G|","D|","A|","E|"];
+  for(const n of mapped){
+    const token = (n.tech==='h'?"h": n.tech==='p'?"p":"") + String(n.fret);
+    const pad = Math.max(1, Math.round(n.dur*4));
+    for(let s=1;s<=6;s++){
+      if(s===n.string){ lines[6-s] += token + "-".repeat(Math.max(0, pad - String(n.fret).length)); }
+      else { lines[6-s] += "-".repeat(pad + token.length - 1); }
+    }
+  }
+  lines.forEach((_,i)=> lines[i] += "|");
+  return lines.join("\n");
+}
+
+// -----------------------------
+// Lick generation (improved musicality & style biases)
+// -----------------------------
+let current = {seq:[], mapped:[], meta:{key:'A',mode:'mixolydian',style:'Rock',bpm:100,bars:2,pos:5}};
+function gid(id){ return document.getElementById(id); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+function pickWeighted(pairs){ const sum = pairs.reduce((a,[,w])=>a+w,0); let r=Math.random()*sum; for(const [v,w] of pairs){ if((r-=w)<=0) return v; } return pairs[0][0]; }
+function roundTo(x,step){ return Math.round(x/step)*step; }
+
+// improved step chooser: scalarity 0..100 (higher = scalar/stepwise)
+function chooseStepScalarity(scalar, difficulty, contour, styleBias){
+  // scalarBias: 0..1 where 1 = fully scalar (mostly ±1)
+  const s = clamp(scalar/100,0,1);
+  // base step distribution weights (value => weight)
+  // We'll create a weighted distribution with buckets: -12,-7,-5,-4,-3,-2,-1,0,1,2,3,4,5,7,12
+  const buckets = [-12,-7,-5,-4,-3,-2,-1,0,1,2,3,4,5,7,12];
+  const weights = buckets.map(step=>{
+    const absStep = Math.abs(step);
+    // prefer small steps when s high, prefer bigger when s low, difficulty increases chance of leaps
+    let w = 1;
+    if(absStep===0) w = 0.4; // hold notes less likely
+    else if(absStep<=1) w = 6 * s + 1; // very strong when scalar high
+    else if(absStep<=2) w = 4 * s + 0.8;
+    else if(absStep<=4) w = 2 * (1 - s) + 0.8;
+    else w = 1.6 * (1 - s) + 0.5;
+    // difficulty increases chance of bigger leaps
+    w *= (1 + (difficulty-1)*0.12 * (absStep>2?1:0));
+    // styleBias may nudge some intervals (e.g., metal favors minor seconds and octaves)
+    if(styleBias && styleBias[step]) w *= styleBias[step];
+    // contour enforcement: if contour is ascending, bias positive steps
+    if(contour==='ascending' && step>0) w *= 1.3;
+    if(contour==='descending' && step<0) w *= 1.3;
+    return Math.max(0.01,w);
+  });
+  // pick a bucket
+  const pairs = buckets.map((b,i)=>[b,weights[i]]);
+  return pickWeighted(pairs);
+}
+
+// create short motif (phrase) and vary it across bars
+function createMotif(startIdx, scaleSet, len, scalarity, difficulty, contour, styleBias){
+  const motif = [];
+  let idx = startIdx;
+  for(let i=0;i<len;i++){
+    const step = chooseStepScalarity(scalarity,difficulty,contour,styleBias);
+    idx = clamp(idx + step, 0, scaleSet.length-1);
+    motif.push(scaleSet[idx]);
+  }
+  return motif;
+}
+
+function styleBiasFor(style){
+  // returns an object mapping certain step sizes to multipliers for chooseStepScalarity
+  switch((style||'Rock').toLowerCase()){
+    case 'jazz': return { '-2':1.1, '-1':1.05, '1':1.05, '2':1.1, '3':1.05 };
+    case 'metal': return { '-1':1.6, '1':1.4, '-12':1.2, '12':1.2, '-7':1.15, '7':1.15 };
+    case 'blues': return { '-3':1.2, '3':1.2, '-1':1.15, '1':1.15, '0':0.9 };
+    case 'funk': return { '2':1.2, '-2':1.2, '3':1.1 };
+    case 'classical': return { '-2':1.1, '2':1.1, '0':0.95 };
+    default: return {};
+  }
+}
+
+function styleRhythmPalette(style){
+  // returns an array of duration weights (quarter beats)
+  switch((style||'Rock').toLowerCase()){
+    case 'jazz': return [[0.5,0.35],[0.25,0.25],[0.75,0.2],[1.0,0.2]];
+    case 'metal': return [[0.25,0.55],[0.5,0.35],[0.125,0.1]];
+    case 'classical': return [[0.5,0.4],[0.25,0.3],[1.0,0.3]];
+    case 'funk': return [[0.25,0.45],[0.5,0.35],[0.75,0.15],[0.5,0.05]];
+    case 'blues': return [[0.5,0.45],[0.25,0.3],[0.75,0.15],[1.0,0.1]];
+    default: return [[0.5,0.45],[0.25,0.35],[0.75,0.08],[1.0,0.12]];
+  }
+}
+
+function generateLick(){
+  // gather params
+  const key = gid('keySel').value || 'A';
+  const mode = gid('modeSel').value;
+  const style = gid('styleSel').value;
+  const bars = +gid('barsSel').value;
+  const diff = +gid('difficulty').value;
+  const contour = gid('contourSel').value;
+  const scalarity = +gid('scalarity').value;
+  const pos = clamp(+gid('posFret').value,1,12);
+  const slurMode = gid('slurSel').value;
+  const notesPerBar = +gid('notesPerBar').value || 6;
+  const humanize = ( +gid('humanize').value || 60 ) / 100;
+
+  // style default mode mapping
+  const styleDefault = {Blues:{mode:'blues'},Rock:{mode:'mixolydian'},Metal:{mode:'phrygian'},Jazz:{mode:'dorian'},Classical:{mode:'aeolian'},Funk:{mode:'mixolydian'}}[style] || {};
+  const useMode = (['pentMinor','blues'].includes(mode) ? mode : (mode || styleDefault.mode || 'mixolydian'));
+
+  // build scale
+  const scaleSet = buildScaleSet(key, useMode, 40, 83);
+  if(!scaleSet.length){ alert('Scale building failed'); return; }
+
+  // style bias for interval choices
+  const sBias = styleBiasFor(style);
+  const rhythmPal = styleRhythmPalette(style);
+
+  // compute target total notes and beats
+  const totalNotes = Math.max(1, Math.round(notesPerBar * bars));
+  const beatCount = bars * 4;
+
+  // choose motif length (short phrase repeated with variation)
+  const motifLen = Math.max(2, Math.min(5, 2 + Math.floor(diff/2)));
+  // start index near chosen posFret
+  const startIdx = nearestIndexToFret(scaleSet, pos);
+  // create base motif
+  const motif = createMotif(startIdx, scaleSet, motifLen, scalarity, diff, contour, sBias);
+
+  // expand motif into sequence of midi notes with rhythmic variation
+  const seq = [];
+  let motifPos = 0;
+  let lastMidi = motif[0] || scaleSet[startIdx];
+  for(let i=0;i<totalNotes;i++){
+    // pick motif step (repeat motif with slight variation sometimes)
+    let midi = motif[motifPos % motif.length];
+    // occasionally vary a note: octave jump or neighbor or blues note
+    if(Math.random() < 0.12 + diff*0.03){
+      if(style.toLowerCase()==='blues' && Math.random()<0.5) midi += (Math.random()<0.5?1:-1); // blue note
+      else if(Math.random()<0.35) midi += (Math.random()<0.5?12:-12);
+      else if(Math.random()<0.25) midi = pick(scaleSet);
+    }
+    // ensure in bounds
+    if(!scaleSet.includes(midi)) midi = nearestInScale(midi, scaleSet);
+
+    // rhythm: pick durations from palette but normalize later
+    const dur = pickWeighted(rhythmPal);
+
+    // technique: slurs when step small and slur mode chosen
+    let tech = null;
+    const stepAbs = Math.abs(midi - lastMidi);
+    if(slurMode !== 'off' && Math.random() < (slurMode==='heavy'?0.55:0.28)){
+      if(midi > lastMidi && stepAbs <= 2) tech = 'h';
+      else if(midi < lastMidi && stepAbs <= 2) tech = 'p';
+    }
+
+    seq.push({midi, dur, tech, humanize});
+    lastMidi = midi;
+    motifPos++;
+    // occasionally mutate motif note (small chance)
+    if(Math.random() < 0.18 + diff*0.04){
+      const idx = Math.floor(Math.random()*motif.length);
+      motif[idx] = clamp(motif[idx] + chooseStepScalarity(scalarity, diff, contour, sBias), 0, scaleSet[scaleSet.length-1]);
+    }
+  }
+
+  // scale durations to fit beatCount
+  const totalBeats = seq.reduce((a,n)=>a+n.dur,0) || 1;
+  const scaleFactor = beatCount / totalBeats;
+  seq.forEach(n=> n.dur = Math.max(0.125, roundTo(n.dur * scaleFactor, 0.125)));
+
+  // map seq to frets/strings
+  const mapped = mapSeqToPosition(seq, pos);
+  current = {seq, mapped, meta:{key, mode:useMode, style, bpm:+gid('tempo').value || 100, bars, pos, notesPerBar}};
+  refreshMeta();
+  hideTab();
+}
+
+// helper: find nearest scale note if mutated outside set
+function nearestInScale(n, scaleSet){
+  let best = scaleSet[0], bestD = Infinity;
+  for(const s of scaleSet){ const d = Math.abs(s - n); if(d < bestD){ best = s; bestD = d; } }
+  return best;
+}
+
+// helper: find nearest index by fret proximity
+function nearestIndexToFret(scaleSet, posFret){
+  let bestI=0,bestD=1e9;
+  for(let i=0;i<scaleSet.length;i++){
+    const cand = bestStringFretForMidi(scaleSet[i], {string:3,fret:posFret});
+    const d = Math.abs(cand.fret - posFret);
+    if(d<bestD){bestD=d; bestI=i;}
+  }
+  return bestI;
+}
+
+// -----------------------------
+// Call & Response (pitch + rhythm detection) -- unchanged
+// -----------------------------
+let mediaStream=null, analyser=null, micRunning=false;
+
+async function startCallAndResponse(){
+  if(!current.mapped?.length) return alert('Generate a lick first');
+  await ensureAudio();
+  await play(current.mapped, current.meta.bpm);
+  try{
+    mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const src = audioCtx.createMediaStreamSource(mediaStream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    src.connect(analyser);
+    micRunning = true;
+    const statusEl = document.getElementById('status'); if(statusEl) statusEl.textContent = 'Listening...';
+    const score = await listenAndScore(current.mapped, current.meta.bpm);
+    micRunning=false;
+    if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); }
+    const statusEl2 = document.getElementById('status'); if(statusEl2) statusEl2.textContent = `Score: ${Math.round(score.total)}% (Pitch ${Math.round(score.pitch)}% • Rhythm ${Math.round(score.rhythm)}%)`;
+    handlePostScore(score);
+  }catch(e){
+    alert('Mic failed: '+(e.message || e));
+  }
+}
+
+function stopMicro(){ micRunning=false; if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; } const statusEl = document.getElementById('status'); if(statusEl) statusEl.textContent='Ready.'; }
+
+async function listenAndScore(mapped, bpm){
+  const beat = 60/(bpm||100);
+  const maxNotes = mapped.length;
+  let pitchHits=0, rhythmHits=0;
+  for(let i=0;i<maxNotes;i++){
+    if(!micRunning) break;
+    const expected = mapped[i];
+    const expectedFreq = midiToFreq(expected.midi);
+    const startTime = audioCtx.currentTime;
+    const endTime = startTime + expected.dur * beat * 1.15;
+    let bestHz=0, samples=0, heardOn=null;
+    while(audioCtx.currentTime < endTime && micRunning){
+      const buf = new Float32Array(analyser.fftSize);
+      analyser.getFloatTimeDomainData(buf);
+      const hz = autoCorrelate(buf, audioCtx.sampleRate);
+      if(hz && hz>30 && hz<5000){ bestHz = hz; samples++; if(!heardOn) heardOn = audioCtx.currentTime; }
+      await new Promise(r=>setTimeout(r, 60));
+    }
+    let pitchOk=false;
+    if(samples>0 && bestHz>0){
+      const cents = 1200 * Math.log2(bestHz/expectedFreq);
+      if(Math.abs(cents) < 80) { pitchOk=true; pitchHits++; }
+    }
+    let rhythmOk=false;
+    if(heardOn){
+      const offsetBeats = (heardOn - startTime) / beat;
+      if(offsetBeats >= -0.4 && offsetBeats <= expected.dur+0.4) { rhythmOk = true; rhythmHits++; }
+    }
+  }
+  const pitchPct = (pitchHits / maxNotes)*100;
+  const rhythmPct = (rhythmHits / maxNotes)*100;
+  const total = Math.round((pitchPct*0.6 + rhythmPct*0.4));
+  return {pitch:pitchPct, rhythm:rhythmPct, total};
+}
+
+// simple autocorrelation pitch detection (kept from your original)
+// returns frequency or 0
+function autoCorrelate(buf, sampleRate) {
+  // Implementation (straightforward) adapted from common autocorrelate functions
+  const SIZE = buf.length;
+  let rms = 0;
+  for (let i = 0; i < SIZE; i++) {
+    const val = buf[i];
+    rms += val*val;
+  }
+  rms = Math.sqrt(rms/SIZE);
+  if (rms < 0.01) return 0;
+  let r1 = 0, r2 = SIZE-1, thres = 0.2;
+  for (let i = 0; i < SIZE/2; i++) if (Math.abs(buf[i]) < thres) { r1 = i; break; }
+  for (let i = 1; i < SIZE/2; i++) if (Math.abs(buf[SIZE-i]) < thres) { r2 = SIZE-i; break; }
+  buf = buf.slice(r1, r2);
+  const newSize = buf.length;
+  const c = new Array(newSize).fill(0);
+  for (let i = 0; i < newSize; i++) for (let j = 0; j < newSize - i; j++) c[i] = c[i] + buf[j]*buf[j+i];
+  let d = 0; while (c[d] > c[d+1]) d++;
+  let maxval = -1, maxpos = -1;
+  for (let i = d; i < newSize; i++) if (c[i] > maxval) { maxval = c[i]; maxpos = i; }
+  let T0 = maxpos;
+  if (T0 === 0) return 0;
+  const x1 = c[T0-1], x2 = c[T0], x3 = c[T0+1];
+  const a = (x1 + x3 - 2*x2)/2;
+  const b = (x3 - x1)/2;
+  if (a) T0 = T0 - b/(2*a);
+  return sampleRate/T0;
+}
+
+// -----------------------------
+// Arcade survival & XP (unchanged logic)
+// -----------------------------
+let game = {running:false, level:1, xp:0, lives:3, achievements:[]};
+function startGame(){ game.running=true; game.level=1; game.xp=0; game.lives=3; updateHUD(); nextRound(); }
+function stopGame(){ game.running=false; const statusEl=document.getElementById('status'); if(statusEl) statusEl.textContent='Game stopped.'; }
+async function nextRound(){
+  if(!game.running) return;
+  gid('difficulty').value = clamp(1 + Math.floor(game.level/2),1,5);
+  gid('posFret').value = clamp(3 + Math.floor(game.level/2),1,12);
+  generateLick();
+  await play(current.mapped, current.meta.bpm);
+  const statusEl=document.getElementById('status'); if(statusEl) statusEl.textContent = 'Round: play it back!';
+  await ensureAudio();
+  try{
+    mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const src = audioCtx.createMediaStreamSource(mediaStream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    src.connect(analyser);
+    micRunning=true;
+    const score = await listenAndScore(current.mapped, current.meta.bpm);
+    micRunning=false;
+    if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); }
+    const statusEl2 = document.getElementById('status'); if(statusEl2) statusEl2.textContent = `Round score: ${score.total}%`;
+    if(score.total >= 65){
+      game.xp += Math.round(score.total); game.level += (score.total>85?1:0); if(statusEl2) statusEl2.textContent += ' — Passed!';
+    } else {
+      game.lives -= 1; if(statusEl2) statusEl2.textContent += ' — Missed!';
+    }
+    checkAchievements(); updateHUD();
+    if(game.lives <=0){ game.running=false; if(statusEl2) statusEl2.textContent = 'Game over — you ran out of lives.'; }
+    else if(game.running) setTimeout(()=> nextRound(), 900);
+  }catch(e){
+    const statusEl3=document.getElementById('status'); if(statusEl3) statusEl3.textContent = 'Mic error: '+e.message;
+  }
+}
+
+function handlePostScore(score){
+  const gained = Math.round(score.total);
+  game.xp += gained;
+  if(score.total > 80) game.level += 1;
+  persistGame(); updateHUD(); checkAchievements();
+}
+
+function updateHUD(){ const xpEl=gid('xp'), lvlEl=gid('level'), livesEl=gid('lives'), achEl=gid('achievements'); if(xpEl) xpEl.textContent = game.xp; if(lvlEl) lvlEl.textContent = game.level; if(livesEl) livesEl.textContent = game.lives; if(achEl) achEl.textContent = game.achievements.length? game.achievements.join(', '): 'None'; }
+function checkAchievements(){ if(game.xp > 500 && !game.achievements.includes('500 XP')) game.achievements.push('500 XP'); if(game.level >=5 && !game.achievements.includes('Level 5')) game.achievements.push('Level 5'); if(game.lives===3 && !game.achievements.includes('Untouched')) game.achievements.push('Untouched'); persistGame(); updateHUD(); }
+function persistGame(){ localStorage.setItem('earlick_game', JSON.stringify(game)); }
+function loadGame(){ const g = JSON.parse(localStorage.getItem('earlick_game')||'null'); if(g){ game=g; updateHUD(); } }
+
+// -----------------------------
+// Playback function (uses sampler when possible, otherwise fallback synth)
+// -----------------------------
+async function play(mapped, bpm, rate=1.0){
+  if(!mapped?.length) return;
+  await ensureAudio();
+  const instrument = gid('instrumentSel')?.value || 'default';
+  const beat = 60/(bpm||100)*rate;
+  let now = audioCtx.currentTime + 0.08;
+  const swing = gid('styleSel').value === 'Jazz' || gid('styleSel').value === 'Funk';
+  const humanizeAmt = (+gid('humanize').value || 60) / 100;
+  for(let i=0;i<mapped.length;i++){
+    const n = mapped[i];
+    const t = now;
+    // micro timing humanize
+    const jitterMs = (Math.random()*40 - 20) * humanizeAmt; // +/-20ms scaled
+    let start = t + jitterMs/1000;
+    // style swing
+    if(swing && (i%2===1)) start += 0.06 * (gid('styleSel').value==='Jazz'?1:0.7);
+    // small tempo wander for realism
+    const durSec = Math.max(0.06, n.dur * beat * (0.88 + Math.random()*0.08));
+    const vel = 0.22 + Math.random()*0.5 * (0.6 + (1 - (humanizeAmt*0.6)));
+    const leg = (n.tech==='h' || n.tech==='p');
+    // try sample
+    const loaded = await playSample(instrument, n.midi, start, durSec, vel, humanizeAmt, leg).catch(()=>null);
+    if(!loaded){
+      playFallback(midiToFreq(n.midi), start, durSec, vel, instrument, leg);
+    }
+    now += n.dur * beat;
+  }
+}
+
+// -----------------------------
+// Saved bank (tab export via print)
+// -----------------------------
+let bank = JSON.parse(localStorage.getItem('earlick_bank')||'[]');
+function persistBank(){ localStorage.setItem('earlick_bank', JSON.stringify(bank)); }
+function renderBank(){
+  const el = gid('bank'); if(!el) return; el.innerHTML='';
+  if(!bank.length){ el.innerHTML='<div style="color:var(--muted)">No saved licks yet.</div>'; return; }
+  bank.forEach((it,i)=>{
+    const div=document.createElement('div'); div.className='bankItem';
+    div.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;color:var(--muted)">${i+1}. ${it.meta.key} ${it.meta.mode} • ${it.meta.style} • pos ${it.meta.pos}</div><div style="display:flex;gap:8px"><button data-i="${i}" class="playSaved">Play</button><button data-i="${i}" class="revealSaved ghost">Reveal</button><button data-i="${i}" class="copySaved ghost">Copy Tab</button><button data-i="${i}" class="delSaved warn">Delete</button></div></div><pre style="margin-top:8px;white-space:pre-wrap">${it.tab}</pre>`;
+    el.appendChild(div);
+  });
+  el.querySelectorAll('.playSaved').forEach(b=> b.onclick = async e=>{ const i=+e.target.dataset.i; await play(bank[i].mapped, bank[i].meta.bpm||+gid('tempo').value); });
+  el.querySelectorAll('.revealSaved').forEach(b=> b.onclick = e=>{ const i=+e.target.dataset.i; gid('tabTxt').textContent = bank[i].tab; });
+  el.querySelectorAll('.copySaved').forEach(b=> b.onclick = e=>{ const i=+e.target.dataset.i; navigator.clipboard?.writeText(bank[i].tab); });
+  el.querySelectorAll('.delSaved').forEach(b=> b.onclick = e=>{ const i=+e.target.dataset.i; bank.splice(i,1); persistBank(); renderBank(); });
+}
+
+// -----------------------------
+// UI utils and wiring
+// -----------------------------
+function refreshMeta(){ const m=current.meta||{}; const metaEl = gid('meta'); if(metaEl) metaEl.innerHTML = `<span class="pill">Key: ${m.key||'A'}</span><span class="pill">Mode: ${m.mode||'mixolydian'}</span><span class="pill">Style: ${m.style||'Rock'}</span><span class="pill">${m.bpm||100} BPM</span><span class="pill">${m.bars||2} bars</span><span class="pill">pos ${m.pos||5}</span><span class="pill">${m.notesPerBar?m.notesPerBar+' notes/bar':''}</span>`; }
+function hideTab(){ const t = gid('tabTxt'); if(t) t.textContent='(tab hidden – press Reveal)'; }
+function showTab(){ const t = gid('tabTxt'); if(t && current?.mapped) t.textContent = renderTab(current.mapped); }
+function on(id,ev,fn){ const el=gid(id); if(el) el.addEventListener(ev,fn); }
+function flash(el){ if(!el) return; el.style.opacity='0.6'; setTimeout(()=> el.style.opacity='1',160); }
+
+// event wiring
+on('genBtn','click', ()=>{ generateLick(); const m=gid('meta'); if(m) flash(m); });
+on('playBtn','click', async ()=>{ if(!current.seq.length) generateLick(); await play(current.mapped, +gid('tempo').value || current.meta.bpm); });
+on('slowBtn','click', async ()=>{ if(!current.seq.length) generateLick(); await play(current.mapped, +gid('tempo').value || current.meta.bpm, 1.25); });
+on('revealBtn','click', ()=> showTab());
+on('saveBtn','click', ()=>{ if(!current?.mapped?.length) return; const tab = renderTab(current.mapped); bank.push({mapped: current.mapped, meta: current.meta, tab}); persistBank(); renderBank(); });
+on('copyTab','click', ()=>{ if(!current?.mapped?.length) return; navigator.clipboard?.writeText(renderTab(current.mapped)); });
+on('callBtn','click', ()=> startCallAndResponse());
+on('scoreBtn','click', ()=> { const s = gid('status'); if(s) alert(s.textContent); });
+on('exportPdf','click', ()=> window.print());
+on('startGame','click', ()=>{ startGame(); });
+on('stopGame','click', ()=>{ stopGame(); });
+
+on('tempo','input', ()=> { const t = gid('tempoVal'); if(t) t.textContent = gid('tempo').value; });
+on('difficulty','input', ()=> { const d=gid('diffVal'); if(d) d.textContent = gid('difficulty').value; });
+on('notesPerBar','input', ()=> { const n=gid('notesPerBarVal'); if(n) n.textContent = gid('notesPerBar').value; });
+on('humanize','input', ()=> { /* could expose a display if desired */ });
+
+// achievements / game load
+loadGame(); renderBank(); generateLick();
+
+// load saved bank from localStorage on init
+(function init(){
+  try{ const b = JSON.parse(localStorage.getItem('earlick_bank') || '[]'); if(Array.isArray(b)) bank = b; }catch(e){}
+  renderBank();
+})();
+
+</script>
+</body>
+</html>
