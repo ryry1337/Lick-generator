@@ -48,104 +48,104 @@ pre{margin:0;font-size:12px;color:#dfe9ff;overflow:auto;white-space:pre}
 <div class="card">
 <h2>Generator & Game</h2>
 <div style="margin-top:6px">
-  <div class="row">
-    <div>
-      <label>Key</label>
-      <select id="keySel"><option>A</option><option>Bb</option><option>B</option><option>C</option><option>Db</option><option>D</option><option>Eb</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>Ab</option></select>
-    </div>
-    <div>
-      <label>Scale / Mode</label>
-      <select id="modeSel"><option value="mixolydian">Mixolydian</option><option value="ionian">Ionian</option><option value="dorian">Dorian</option><option value="phrygian">Phrygian</option><option value="lydian">Lydian</option><option value="aeolian">Aeolian</option><option value="locrian">Locrian</option><option value="pentMinor">Pentatonic</option><option value="blues">Blues</option></select>
-    </div>
-  </div>
+<div class="row">
+<div>
+<label>Key</label>
+<select id="keySel"><option>A</option><option>Bb</option><option>B</option><option>C</option><option>Db</option><option>D</option><option>Eb</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>Ab</option></select>
+</div>
+<div>
+<label>Scale / Mode</label>
+<select id="modeSel"><option value="mixolydian">Mixolydian</option><option value="ionian">Ionian</option><option value="dorian">Dorian</option><option value="phrygian">Phrygian</option><option value="lydian">Lydian</option><option value="aeolian">Aeolian</option><option value="locrian">Locrian</option><option value="pentMinor">Pentatonic</option><option value="blues">Blues</option></select>
+</div>
+</div>
 
-  <div class="row" style="margin-top:8px">
-    <div>
-      <label>Style</label>
-      <select id="styleSel"><option>Rock</option><option>Blues</option><option>Jazz</option><option>Classical</option><option>Metal</option><option>Funk</option></select>
-    </div>
-    <div>
-      <label>Instrument</label>
-      <select id="instrumentSel">
-        <option value="piano">Piano</option>
-        <option value="violin">Violin</option>
-        <option value="electric">Electric Guitar</option>
-        <option value="acoustic">Acoustic Guitar</option>
-        <option value="sax">Saxophone</option>
-        <option value="default">Synth (fallback)</option>
-      </select>
-    </div>
-  </div>
+<div class="row" style="margin-top:8px">
+<div>
+<label>Style</label>
+<select id="styleSel"><option>Rock</option><option>Blues</option><option>Jazz</option><option>Classical</option><option>Metal</option><option>Funk</option></select>
+</div>
+<div>
+<label>Instrument</label>
+<select id="instrumentSel">
+<option value="piano">Piano</option>
+<option value="violin">Violin</option>
+<option value="electric">Electric Guitar</option>
+<option value="acoustic">Acoustic Guitar</option>
+<option value="sax">Saxophone</option>
+<option value="default">Synth (fallback)</option>
+</select>
+</div>
+</div>
 
-  <div class="row3" style="margin-top:8px">
-    <div>
-      <label>Contour</label>
-      <select id="contourSel"><option value="random">Random</option><option value="ascending">Ascending</option><option value="descending">Descending</option><option value="scalar">Mostly scalar</option></select>
-    </div>
-    <div>
-      <label>Position (fret)</label>
-      <input type="number" id="posFret" min="1" max="12" value="5" />
-    </div>
-    <div>
-      <label>Bars</label>
-      <select id="barsSel"><option>1</option><option selected>2</option><option>4</option></select>
-    </div>
-  </div>
+<div class="row3" style="margin-top:8px">
+<div>
+<label>Contour</label>
+<select id="contourSel"><option value="random">Random</option><option value="ascending">Ascending</option><option value="descending">Descending</option><option value="scalar">Mostly scalar</option></select>
+</div>
+<div>
+<label>Position (fret)</label>
+<input type="number" id="posFret" min="1" max="12" value="5" />
+</div>
+<div>
+<label>Bars</label>
+<select id="barsSel"><option>1</option><option selected>2</option><option>4</option></select>
+</div>
+</div>
 
-  <div class="row" style="margin-top:8px">
-    <div>
-      <label>Tempo: <span id="tempoVal">100</span> BPM</label>
-      <input type="range" id="tempo" min="60" max="160" value="100" />
-    </div>
-    <div>
-      <label>Difficulty: <span id="diffVal">2</span>/5</label>
-      <input type="range" id="difficulty" min="1" max="5" value="2" />
-    </div>
-  </div>
+<div class="row" style="margin-top:8px">
+<div>
+<label>Tempo: <span id="tempoVal">100</span> BPM</label>
+<input type="range" id="tempo" min="60" max="160" value="100" />
+</div>
+<div>
+<label>Difficulty: <span id="diffVal">2</span>/5</label>
+<input type="range" id="difficulty" min="1" max="5" value="2" />
+</div>
+</div>
 
-  <div class="row" style="margin-top:8px">
-    <div>
-      <label>Notes per Bar (4–12)</label>
-      <input type="number" id="notesPerBar" min="4" max="12" value="6"/>
-    </div>
-    <div>
-      <label>Max Repeat Notes (%)</label>
-      <input type="range" id="repeatChance" min="0" max="100" value="20"/>
-    </div>
-  </div>
+<div class="row" style="margin-top:8px">
+<div>
+<label>Scalarity (stepwise ↔ leapy)</label>
+<input type="range" id="scalarity" min="0" max="100" value="60" />
+</div>
+<div>
+<label>Slurs / Legato</label>
+<select id="slurSel"><option value="off">Off</option><option value="light" selected>Light</option><option value="heavy">Heavy</option></select>
+</div>
+</div>
 
-  <div class="row" style="margin-top:8px">
-    <div>
-      <label>Scalarity (stepwise ↔ leapy)</label>
-      <input type="range" id="scalarity" min="0" max="100" value="60" />
-    </div>
-    <div>
-      <label>Slurs / Legato</label>
-      <select id="slurSel"><option value="off">Off</option><option value="light" selected>Light</option><option value="heavy">Heavy</option></select>
-    </div>
-  </div>
+<div class="row" style="margin-top:8px">
+<div>
+<label>Notes per bar</label>
+<input type="number" id="notesPerBar" min="4" max="12" value="6" />
+</div>
+<div>
+<label>Max repeats in a row</label>
+<input type="range" id="maxRepeats" min="1" max="4" value="2" />
+</div>
+</div>
 
-  <div class="btnbar">
-    <button id="genBtn" class="primary">Generate Lick</button>
-    <button id="playBtn">Play</button>
-    <button id="slowBtn">Play Slow</button>
-    <button id="revealBtn" class="ghost">Reveal Tab</button>
-    <button id="saveBtn" class="ghost">Save</button>
-  </div>
+<div class="btnbar">
+<button id="genBtn" class="primary">Generate Lick</button>
+<button id="playBtn">Play</button>
+<button id="slowBtn">Play Slow</button>
+<button id="revealBtn" class="ghost">Reveal Tab</button>
+<button id="saveBtn" class="ghost">Save</button>
+</div>
 
-  <div id="meta" style="margin-top:12px"></div>
-  <div style="margin-top:8px"><div class="pill" id="status">Ready. Stay in ear mode until you're stuck; then reveal.</div></div>
+<div id="meta" style="margin-top:12px"></div>
+<div style="margin-top:8px"><div class="pill" id="status">Ready. Stay in ear mode until you're stuck; then reveal.</div></div>
 
-  <div style="margin-top:12px" class="statusRow">
-    <div class="gameHUD">
-      <div class="badge">Level: <span id="level">1</span></div>
-      <div class="badge">XP: <span id="xp">0</span></div>
-      <div class="badge">Lives: <span id="lives">3</span></div>
-    </div>
-    <div style="margin-left:auto" class="small">Arcade Mode: <button id="startGame" class="primary">Start Survival</button> <button id="stopGame" class="ghost">Stop</button></div>
-  </div>
+<div style="margin-top:12px" class="statusRow">
+<div class="gameHUD">
+<div class="badge">Level: <span id="level">1</span></div>
+<div class="badge">XP: <span id="xp">0</span></div>
+<div class="badge">Lives: <span id="lives">3</span></div>
+</div>
+<div style="margin-left:auto" class="small">Arcade Mode: <button id="startGame" class="primary">Start Survival</button> <button id="stopGame" class="ghost">Stop</button></div>
+</div>
 
-  <div style="margin-top:10px" class="small">Achievements: <span id="achievements">None</span></div>
+<div style="margin-top:10px" class="small">Achievements: <span id="achievements">None</span></div>
 
 </div>
 </div>
@@ -154,10 +154,10 @@ pre{margin:0;font-size:12px;color:#dfe9ff;overflow:auto;white-space:pre}
 <h2>Playback & Tab</h2>
 <div class="tabbox" style="margin-top:8px"><pre id="tabTxt">(tab hidden – press Reveal)</pre></div>
 <div class="btnbar" style="margin-top:10px">
-  <button id="callBtn" class="primary">Call & Response</button>
-  <button id="scoreBtn" class="ghost">Show Last Score</button>
-  <button id="exportPdf" class="ghost">Export Tab (Print/PDF)</button>
-  <button id="copyTab" class="ghost">Copy Tab</button>
+<button id="callBtn" class="primary">Call & Response</button>
+<button id="scoreBtn" class="ghost">Show Last Score</button>
+<button id="exportPdf" class="ghost">Export Tab (Print/PDF)</button>
+<button id="copyTab" class="ghost">Copy Tab</button>
 </div>
 <div style="margin-top:10px;color:var(--muted);font-size:13px">Tip: Use Call & Response to test yourself — the app will listen and score pitch & rhythm.</div>
 </div>
@@ -172,14 +172,70 @@ pre{margin:0;font-size:12px;color:#dfe9ff;overflow:auto;white-space:pre}
 </div>
 
 <script>
-// -----------------------------
-// WebAudio helpers (same as before)
-// -----------------------------
+// --- AUDIO CONTEXT & SAMPLE-BASED SAMPLER (UNCHANGED, WORKING) ---
 let audioCtx=null, masterGain=null;
-async function ensureAudio(){if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(!masterGain){masterGain=audioCtx.createGain(); masterGain.gain.value=0.95; masterGain.connect(audioCtx.destination);} if(audioCtx.state==='suspended') await audioCtx.resume();}
-function midiToFreq(m){return 440*Math.pow(2,(m-69)/12);}
-function midiToNoteName(m){const names=['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B']; const pc=names[(m%12+12)%12]; const oct=Math.floor(m/12)-1; return `${pc}${oct}`;}
-// same sampler logic as before (we're keeping sound as-is)
-const SAMPLE_BASE={piano:'https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/piano-mp3',violin:'https://example.com/samples/violin',electric:'https://example.com/samples/electric',acoustic:'https://example.com/samples/acoustic',sax:'https://example.com/samples/sax'};
+async function ensureAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(!masterGain){ masterGain=audioCtx.createGain(); masterGain.gain.value=0.95; masterGain.connect(audioCtx.destination);} if(audioCtx.state==='suspended') await audioCtx.resume(); }
+function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
+function midiToNoteName(m){ const names=['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B']; const pc=names[(m%12+12)%12]; const oct=Math.floor(m/12)-1; return `${pc}${oct}`; }
+
+const SAMPLE_BASE={
+piano:'https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/piano-mp3',
+violin:'https://example.com/samples/violin',
+electric:'https://example.com/samples/electric',
+acoustic:'https://example.com/samples/acoustic',
+sax:'https://example.com/samples/sax'
+};
+
 const sampler={};
-function sampleUrlFor(inst,note){const base=SAMPLE_BASE[inst]; if(!base) return null; const pats=[`${base}/${inst}.mp3
+function sampleUrlFor(instrument,noteName){
+const base=SAMPLE_BASE[instrument]; if(!base) return null;
+const patterns=[
+`${base}/${instrument}.mp3`,
+`${base}/${noteName}.mp3`,
+`${base}/${instrument}.${noteName}.mp3`,
+`${base}/${instrument}-${noteName}.mp3`,
+`${base}/${instrument}_mp3-${noteName}.mp3`,
+`${base}/${noteName}.wav`
+];
+return patterns;
+}
+
+async function loadSample(instrument,midi){
+sampler[instrument]=sampler[instrument]||new Map();
+const map=sampler[instrument];
+if(map.has(midi)) return map.get(midi);
+const noteName=midiToNoteName(midi);
+const candidates=sampleUrlFor(instrument,noteName);
+if(!candidates) return null;
+for(const url of candidates){
+try{
+const res=await fetch(url); if(!res.ok) continue;
+const arr=await res.arrayBuffer();
+const buf=await audioCtx.decodeAudioData(arr.slice(0));
+map.set(midi,buf);
+console.log('Loaded sample',instrument,midi,url);
+return buf;
+}catch(e){}
+}
+map.set(midi,null); console.warn('Failed to load sample for',instrument,noteName,candidates);
+return null;
+}
+
+async function playSample(instrument,midi,start,dur,vel=0.8,humanize=true){
+if(!audioCtx) return;
+const buf=await loadSample(instrument,midi);
+if(!buf) return null;
+const src=audioCtx.createBufferSource(); src.buffer=buf;
+const cents=humanize?(Math.random()*30-15):0;
+src.playbackRate.value=Math.pow(2,cents/1200);
+let lfo=null,lfoGain=null;
+if(humanize&&(instrument==='violin'||instrument==='electric'||instrument==='acoustic')){
+lfo=audioCtx.createOscillator(); lfo.frequency.value=5+Math.random()*3;
+lfoGain=audioCtx.createGain(); lfoGain.gain.value=0.002+Math.random()*0.0015;
+lfo.connect(lfoGain); lfoGain.connect(src.playbackRate); lfo.start();
+}
+const gain=audioCtx.createGain(); gain.gain.value=vel*(0.85+Math.random()*0.3);
+const filter=audioCtx.createBiquadFilter(); filter.type='lowpass'; filter.frequency.value=instrument==='piano'?6000:(instrument==='violin'?7000:5000);
+src.connect(filter); filter.connect(gain); gain.connect(masterGain);
+src.start(start); src.stop(start+dur+0.1);
+if(lfo){ setTimeout(()=>{try{lfo.stop(); lfo.disconnect(); lfoGain.disconnect();}catch(e){} }, Math.max(200,(dur+0.2)*100
