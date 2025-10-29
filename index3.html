@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lick Generator (Single File)</title>
+  <title>Lick Generator — Smooth Audio Build</title>
   <meta name="theme-color" content="#0b1220"/>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Ctext y='52' x='6' font-size='56'%3E🎸%3C/text%3E%3C/svg%3E">
   <style>
@@ -41,9 +41,7 @@
     .vizHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
     #metaText{color:#cfe8ff;font-size:12px}
     #pitchGraph{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0)); border-radius:12px}
-    .axis text{fill:#94a3b8; font-size:10px}
     .axis line{stroke:rgba(255,255,255,0.15); stroke-width:.7}
-    .axis path{stroke:none}
     footer{color:var(--muted); font-size:12px; margin-top:16px; display:flex; gap:8px}
     @media (max-width:720px){
       label{width:120px}
@@ -55,7 +53,7 @@
   <div class="wrap">
     <header>
       <h1>🎸 Lick Generator</h1>
-      <p class="lead">Short, musical, genre-authentic licks for play-by-ear training.</p>
+      <p class="lead">Short, musical, genre-authentic licks for play-by-ear training (smoother audio).</p>
     </header>
 
     <section class="card controls">
@@ -108,7 +106,7 @@
         <button id="btnLoop" disabled>Loop</button>
         <button id="btnStartAudio">Enable Audio</button>
       </div>
-      <small class="tiny">Tip: tap “Enable Audio” once (required by mobile browsers), then Generate → Play.</small>
+      <small class="tiny">Tip: tap “Enable Audio” (mobile policy), then Generate → Play. If it ever crackles, drop your phone volume one notch.</small>
     </section>
 
     <section class="card viz" id="vizCard" hidden>
@@ -119,18 +117,16 @@
     </section>
 
     <footer>
-      <span>single-file v1.0</span> • <span>Tone.js client-side only</span>
+      <span>smooth-audio v1.1</span> • <span>Tone.js, client-side only</span>
     </footer>
   </div>
 
-  <!-- Tone.js (single dependency) -->
+  <!-- Tone.js -->
   <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
 
   <!-- === theory.js === -->
   <script>
   window.Theory = (() => {
-    const NOTE_NAMES_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-    const NOTE_NAMES_FLAT  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
     const keys = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
     const scaleDefs = {
       'major (Ionian)':           [0,2,4,5,7,9,11],
@@ -150,16 +146,8 @@
       'octatonic diminished (H-W)': [0,1,3,4,6,7,9,10],
       'octatonic diminished (W-H)': [0,2,3,5,6,8,9,11]
     };
-    function pcFromKey(key){
-      const map = {'C':0,'C#':1,'Db':1,'D':2,'Eb':3,'D#':3,'E':4,'F':5,'F#':6,'Gb':6,'G':7,'Ab':8,'G#':8,'A':9,'Bb':10,'A#':10,'B':11};
-      return map[key];
-    }
-    function getScale(key, mode){
-      const steps = scaleDefs[mode];
-      if(!steps) throw new Error('Unknown mode: '+mode);
-      const tonicPc = pcFromKey(key);
-      return steps.map(s => (tonicPc + s) % 12);
-    }
+    const pcFromKey = (key) => ({'C':0,'C#':1,'Db':1,'D':2,'Eb':3,'D#':3,'E':4,'F':5,'F#':6,'Gb':6,'G':7,'Ab':8,'G#':8,'A':9,'Bb':10,'A#':10,'B':11})[key];
+    function getScale(key, mode){ const steps = scaleDefs[mode]; const t = pcFromKey(key); return steps.map(s => (t + s) % 12); }
     function quantizeToScale(pc, pcs){
       if(pcs.includes(pc)) return pc;
       for(let d=1; d<12; d++){
@@ -185,58 +173,108 @@
       return new Set([0,2,4,6].map(i => pcs[i % pcs.length]));
     }
     function isChordTone(pc, key, mode){ return chordTonesFor(key, mode).has(pc); }
-    return {
-      keys, scaleDefs, getScale, isChordTone, chordTonesFor,
-      pcFromKey, quantizeToScale, wrapRegister, pickWeighted, intervalHistogramFromScalarLeapy
-    };
+    return { keys, scaleDefs, getScale, isChordTone, chordTonesFor, pcFromKey, quantizeToScale, wrapRegister, pickWeighted, intervalHistogramFromScalarLeapy };
   })();
   </script>
 
-  <!-- === toneSetup.js === -->
+  <!-- === toneSetup.js (SMOOTHER) === -->
   <script>
   window.AudioRig = (() => {
     let ready = false;
-    const limiter = new Tone.Limiter(-3).toDestination();
-    const masterGain = new Tone.Gain(0.5).connect(limiter);
-    const makeReverb = (room=0.2) => new Tone.JCReverb(room).connect(masterGain);
+
+    // Safer headroom and soft comp → limiter
+    const comp = new Tone.Compressor(-24, 3).toDestination();
+    const limiter = new Tone.Limiter(-3).connect(comp);
+    const masterGain = new Tone.Gain(0.6).connect(limiter);
+    Tone.getDestination().volume.value = -6; // extra headroom
+
+    const makeReverb = (room=0.15) => new Tone.Reverb({ decay: 1.8, wet: 0.12 }).connect(masterGain);
+
+    // Smooth envelope template
+    const env = { attack: 0.01, decay: 0.12, sustain: 0.7, release: 0.16 };
 
     function makeClassical(){
+      // Poly for overlaps; warm lowpass; light verb
       const reverb = makeReverb(0.18);
-      const eq = new Tone.EQ3(-1,0,0).connect(reverb);
-      const pluck = new Tone.PluckSynth({attackNoise:0.5,dampening:4200,resonance:0.6}).connect(eq);
-      return { synth: pluck, chain:[eq,reverb], cleanup:()=>{pluck.dispose(); eq.dispose(); reverb.dispose();} };
+      const lp = new Tone.Filter({ frequency: 4200, type:'lowpass', rolloff:-24 }).connect(reverb);
+      const poly = new Tone.PolySynth(Tone.Synth, {
+        maxPolyphony: 8,
+        options: { oscillator:{ type:'triangle' }, envelope: env }
+      }).connect(lp);
+      return { synth: poly, chain:[lp,reverb], cleanup:()=>{poly.dispose(); lp.dispose(); reverb.dispose();} };
     }
+
     function makeJazz(){
-      const reverb = makeReverb(0.22);
-      const eq = new Tone.EQ3(-2,1,-2).connect(reverb);
-      const comp = new Tone.Compressor(-18,3).connect(eq);
-      const synth = new Tone.AMSynth({oscillator:{type:'sine'}, envelope:{attack:0.003,decay:0.2,sustain:0.7,release:0.3}}).connect(comp);
-      return { synth, chain:[comp,eq,reverb], cleanup:()=>{synth.dispose(); comp.dispose(); eq.dispose(); reverb.dispose();} };
+      // FM warmth + gentle chorus; mellow top; platey verb feel
+      const reverb = makeReverb(0.2);
+      const chorus = new Tone.Chorus({ frequency: 0.9, delayTime: 3.5, depth: 0.2, wet: 0.15 }).connect(reverb);
+      const eq = new Tone.EQ3(-1, 0.5, -2).connect(chorus);
+      const fm = new Tone.PolySynth(Tone.FMSynth, {
+        maxPolyphony: 8,
+        options:{
+          harmonicity: 1.5,
+          modulationIndex: 6,
+          oscillator:{ type:'sine' },
+          envelope: env,
+          modulation: { type:'triangle' },
+          modulationEnvelope: { attack:0.01, decay:0.2, sustain:0.6, release:0.2 }
+        }
+      }).connect(eq);
+      return { synth: fm, chain:[eq,chorus,reverb], cleanup:()=>{fm.dispose(); eq.dispose(); chorus.dispose(); reverb.dispose();} };
     }
+
     function makeRock(){
+      // Mild drive, cab-ish LP, short verb; keep clarity
       const reverb = makeReverb(0.12);
-      const filter = new Tone.Filter(1200,'lowpass').connect(reverb);
-      const dist = new Tone.Distortion(0.25).connect(filter);
-      const synth = new Tone.MonoSynth({oscillator:{type:'sawtooth'}, envelope:{attack:0.005,decay:0.15,sustain:0.4,release:0.2}}).connect(dist);
-      return { synth, chain:[dist,filter,reverb], cleanup:()=>{synth.dispose(); dist.dispose(); filter.dispose(); reverb.dispose();} };
+      const lp = new Tone.Filter({ frequency: 2400, type:'lowpass', rolloff:-24 }).connect(reverb);
+      const dist = new Tone.Distortion(0.18).connect(lp);
+      const mono = new Tone.MonoSynth({
+        oscillator:{ type:'sawtooth' },
+        envelope: env,
+        filter: { type:'lowpass', frequency: 1800, rolloff: -24 },
+        filterEnvelope: { attack:0.005, decay:0.15, sustain:0.4, release:0.12, baseFrequency: 800, octaves: 2.5 }
+      }).connect(dist);
+      return { synth: mono, chain:[dist,lp,reverb], cleanup:()=>{mono.dispose(); dist.dispose(); lp.dispose(); reverb.dispose();} };
     }
+
     function makeMetal(){
-      const reverb = makeReverb(0.08);
-      const filter = new Tone.Filter(1500,'lowpass').connect(reverb);
-      const dist = new Tone.Distortion(0.45).connect(filter);
-      const synth = new Tone.MonoSynth({oscillator:{type:'square'}, envelope:{attack:0.002,decay:0.12,sustain:0.2,release:0.08}}).connect(dist);
-      return { synth, chain:[dist,filter,reverb], cleanup:()=>{synth.dispose(); dist.dispose(); filter.dispose(); reverb.dispose();} };
+      // Tighter, brighter edge but controlled; very short verb
+      const reverb = makeReverb(0.06);
+      const lp = new Tone.Filter({ frequency: 2600, type:'lowpass', rolloff:-24 }).connect(reverb);
+      const dist = new Tone.Distortion(0.28).connect(lp);
+      const mono = new Tone.MonoSynth({
+        oscillator:{ type:'square' },
+        envelope: { attack: 0.005, decay: 0.12, sustain: 0.45, release: 0.12 },
+        filter: { type:'lowpass', frequency: 2000, rolloff: -24 },
+        filterEnvelope: { attack:0.004, decay:0.1, sustain:0.5, release:0.08, baseFrequency: 700, octaves: 3 }
+      }).connect(dist);
+      return { synth: mono, chain:[dist,lp,reverb], cleanup:()=>{mono.dispose(); dist.dispose(); lp.dispose(); reverb.dispose();} };
     }
-    function bpmForGenre(genre){ return genre==='Jazz'?132 : genre==='Rock'?120 : genre==='Metal'?140 : 96; }
-    async function ensureStarted(){ if(!ready){ await Tone.start(); ready = true; } }
+
+    function bpmForGenre(genre){
+      switch(genre){
+        case 'Jazz': return 128; // a hair slower for clarity
+        case 'Rock': return 112;
+        case 'Metal': return 132;
+        default: return 94; // Classical
+      }
+    }
+
+    async function ensureStarted(){
+      if(!ready){
+        await Tone.start();
+        ready = true;
+      }
+    }
+
     return { makeClassical, makeJazz, makeRock, makeMetal, bpmForGenre, ensureStarted, masterGain };
   })();
   </script>
 
-  <!-- === musicEngine.js === -->
+  <!-- === musicEngine.js (motif engine) === -->
   <script>
   window.MusicEngine = (() => {
-    const { getScale, isChordTone, pcFromKey, pickWeighted,
+    const { getScale, isChordTone, pickWeighted,
             intervalHistogramFromScalarLeapy, wrapRegister, quantizeToScale } = Theory;
 
     function rhythmPool(difficulty){
@@ -257,30 +295,33 @@
       }
       return pool;
     }
+
     function chooseDur(pool){ return pool[Math.floor(Math.random()*pool.length)]; }
+
     function chooseInterval(hist){
       const abs = pickWeighted(hist);
       const dir = Math.random()<0.52 ? 1 : -1;
       return dir * (abs===8 ? 12 : abs);
     }
+
     function pickStartMidi(key, mode, baseRange=[52,76]){
       const pcs = getScale(key, mode);
-      const tonicPc = pcs[0];
-      let midi = wrapRegister(48 + tonicPc, baseRange[0], baseRange[1]);
+      let midi = wrapRegister(48 + pcs[0], baseRange[0], baseRange[1]);
       if(Math.random() < 0.4){
         midi = wrapRegister(midi + (pcs[1]-pcs[0] + 12) % 12, baseRange[0], baseRange[1]);
       }
       return midi;
     }
-    function nearestScalePc(pc, pcs){ return quantizeToScale(pc, pcs); }
+
     function ornamentFor(genre, difficulty){
       const r = Math.random(), d = difficulty/100;
-      if(genre==='Classical'){ if(r<0.12*d) return 'grace'; if(r<0.16*d) return 'trill'; }
-      else if(genre==='Jazz'){ if(r<0.20*d) return 'grace'; if(r<0.28*d) return 'slide'; }
-      else if(genre==='Rock'){ if(r<0.30*d) return 'bend'; if(r<0.36*d) return 'slide'; }
-      else if(genre==='Metal'){ if(r<0.20*d) return 'slide'; }
+      if(genre==='Classical'){ if(r<0.10*d) return 'grace'; if(r<0.12*d) return 'trill'; }
+      else if(genre==='Jazz'){ if(r<0.16*d) return 'grace'; if(r<0.24*d) return 'slide'; }
+      else if(genre==='Rock'){ if(r<0.22*d) return 'bend'; if(r<0.30*d) return 'slide'; }
+      else if(genre==='Metal'){ if(r<0.18*d) return 'slide'; }
       return null;
     }
+
     function generateLick(opts){
       const { key='C', mode='major (Ionian)', genre='Classical',
               bars=2, numNotes=12, scalarLeapy=60, difficulty=40, swing=false } = opts;
@@ -308,7 +349,7 @@
       }
 
       let i = 0, placed = 0;
-      let phraseBoundaryCandidates = [Math.floor(total16/2), total16-1];
+      const boundaries = [Math.floor(total16/2), total16-1];
 
       while(i < total16 && placed < targetNotes){
         const {len, rest} = chooseDur(rPool);
@@ -318,34 +359,35 @@
           if(placed > 0){
             const step = chooseInterval(intHist);
             let pc = ((midi % 12) + step + 12) % 12;
-            pc = nearestScalePc(pc, scalePcs);
+            pc = quantizeToScale(pc, scalePcs);
             let candidate = (Math.floor((midi+step)/12)*12) + pc;
             candidate = wrapRegister(candidate, 50 - Math.floor(difficulty/10), 80 + Math.floor(difficulty/20));
             midi = candidate;
           }
-          const isBoundary = phraseBoundaryCandidates.some(b => Math.abs((i+len)-b) <= 1);
+
+          const isBoundary = boundaries.some(b => Math.abs((i+len)-b) <= 1);
           const thisPc = ((midi % 12) + 12) % 12;
           let finalMidi = midi;
 
-          if(isBoundary){
-            if(Math.random() < preferChordToneBiasEnd){
-              const chordSet = Theory.chordTonesFor(key, mode);
-              if(!chordSet.has(thisPc)){
-                const up = (thisPc + 1) % 12, down = (thisPc + 11) % 12;
-                const candidates = [down, up, (thisPc+2)%12, (thisPc+10)%12];
-                const hit = candidates.find(c => chordSet.has(c));
-                if(typeof hit === 'number'){
-                  finalMidi = wrapRegister(midi + ((hit - thisPc + 12) % 12), 48, 84);
-                }
+          if(isBoundary && Math.random() < preferChordToneBiasEnd){
+            const chordSet = Theory.chordTonesFor(key, mode);
+            if(!chordSet.has(thisPc)){
+              const up = (thisPc + 1) % 12, down = (thisPc + 11) % 12;
+              const candidates = [down, up, (thisPc+2)%12, (thisPc+10)%12];
+              const hit = candidates.find(c => chordSet.has(c));
+              if(typeof hit === 'number'){
+                finalMidi = wrapRegister(midi + ((hit - thisPc + 12) % 12), 48, 84);
               }
             }
           }
+
           const orn = ornamentFor(genre, difficulty);
+
           notes.push({
             midi: finalMidi,
             time: indexToTicks(i),
             dur: len,
-            vel: 0.7 + (Math.random()*0.2 - 0.1),
+            vel: 0.76 + (Math.random()*0.18 - 0.09), // tighter dynamic window
             isChordTone: isChordTone(((finalMidi%12)+12)%12, key, mode),
             ornament: orn
           });
@@ -354,10 +396,11 @@
         i += len;
       }
 
+      // nudge last note toward tonic if close
       if(notes.length){
         const last = notes[notes.length-1];
         const lastPc = ((last.midi%12)+12)%12;
-        if(Math.random() < 0.7 && lastPc !== tonicPc){
+        if(Math.random() < 0.65 && lastPc !== tonicPc){
           const up = (lastPc + 1) % 12, down = (lastPc + 11) % 12;
           if(up === tonicPc || down === tonicPc){
             const delta = (tonicPc - lastPc + 12) % 12;
@@ -367,13 +410,13 @@
         }
       }
 
-      const lick = {
+      return {
         key, mode, genre, bpm, swing: (genre==='Jazz' && !!swing) ? 0.58 : 0,
         notes,
         meta:{ scalarLeapy, difficulty, phraseTargets: [] }
       };
-      return lick;
     }
+
     return { generateLick };
   })();
   </script>
@@ -400,7 +443,6 @@
       const maxT = Math.max(...times16.map((t,i)=>t + lick.notes[i].dur));
 
       const axis = document.createElementNS('http://www.w3.org/2000/svg','g');
-      axis.setAttribute('class','axis');
       for(let y=0;y<5;y++){
         const ly = H-10 - (y*(H-20)/4);
         const line = document.createElementNS('http://www.w3.org/2000/svg','line');
@@ -434,15 +476,12 @@
         svg.appendChild(c);
       });
     }
-    function metaText(lick){
-      if(!lick) return '—';
-      return `${lick.genre} • ${lick.key} ${lick.mode} • ${lick.bpm} BPM ${lick.swing ? '(swing)' : ''}`;
-    }
+    const metaText = (lick) => lick ? `${lick.genre} • ${lick.key} ${lick.mode} • ${lick.bpm} BPM ${lick.swing ? '(swing)' : ''}` : '—';
     return { renderPitchGraph, metaText };
   })();
   </script>
 
-  <!-- === ui.js + app.js merged === -->
+  <!-- === UI + APP (with smoother playback + ornaments-as-note-pairs) === -->
   <script>
   window.UI = (() => {
     const els = {
@@ -468,19 +507,19 @@
 
     function populateOnce(){
       Theory.keys.forEach(k=> els.key.add(new Option(k,k)));
-      const order = [
+      [
         'major (Ionian)','natural minor (Aeolian)','harmonic minor','melodic minor (asc.)',
         'Dorian','Phrygian','Lydian','Mixolydian','Locrian',
         'major pentatonic','minor pentatonic','blues (hexatonic)',
         'whole-tone','octatonic diminished (H-W)','octatonic diminished (W-H)','chromatic'
-      ];
-      order.forEach(m => els.mode.add(new Option(m,m)));
+      ].forEach(m => els.mode.add(new Option(m,m)));
       ['Classical','Jazz','Rock','Metal'].forEach(g=> els.genre.add(new Option(g,g)));
       [1,2,3,4].forEach(b=> els.length.add(new Option(`${b}`,b)));
       [4,6,8,10,12,14,16,20,24,28,32].forEach(n=> els.notes.add(new Option(`${n}`,n)));
       els.key.value='C'; els.mode.value='major (Ionian)'; els.genre.value='Classical';
       els.length.value='2'; els.notes.value='12';
     }
+
     function setEnabled(flag){
       ['key','mode','genre','length','notes','scalar','diff','swing','viz'].forEach(id => els[id].disabled = !flag);
       ['btnGen','btnRegen'].forEach(id => els[id].disabled = !flag);
@@ -524,6 +563,7 @@
       els.btnStart.disabled = true;
       els.btnStart.textContent = 'Audio Ready';
     }
+
     function cleanupTone(){ if(part){ part.stop(); part.dispose(); part=null; } if(rig && rig.cleanup){ rig.cleanup(); rig=null; } }
     function buildRigForGenre(genre){
       cleanupTone();
@@ -532,66 +572,98 @@
       else if(genre==='Metal') rig = AudioRig.makeMetal();
       else rig = AudioRig.makeClassical();
     }
+
     function ensureTransport(lick){
       Tone.Transport.bpm.value = lick.bpm;
       if(lick.genre==='Jazz' && lick.swing){
         Tone.Transport.swing = 1; Tone.Transport.swingSubdivision = '8n'; Tone.Transport.swingAmount = 0.58;
       } else { Tone.Transport.swing = 0; }
     }
+
+    // Convert 16th-note grid to seconds; enforce a minimum gate to avoid “chatter”
     function scheduleLick(lick){
       ensureTransport(lick);
       if(part){ part.stop(); part.dispose(); part=null; }
-      const sixteenthDur = Tone.Time('16n').toSeconds();
-      const events = lick.notes.map(n => ({ time: Tone.Time(n.time), dur: n.dur*sixteenthDur, midi: n.midi, vel: n.vel, orn: n.ornament }));
-      const jitterMs = 5 + (lick.meta.difficulty/100)*10;
-      part = new Tone.Part((time, ev) => {
-        const t = time + (Math.random()*jitterMs - jitterMs/2)/1000;
-        const freq = Tone.Frequency(ev.midi, 'midi');
-        if(lick.genre==='Rock' && ev.orn==='bend'){
-          rig.synth.frequency.setValueAtTime(freq, t);
-          rig.synth.frequency.exponentialRampToValueAtTime(freq*1.05, t + ev.dur*0.4);
-          rig.synth.triggerAttackRelease(freq, ev.dur, t, ev.vel);
-        } else if(ev.orn==='slide'){
-          rig.synth.frequency.setValueAtTime(freq*0.97, t);
-          rig.synth.frequency.exponentialRampToValueAtTime(freq, t + Math.min(0.12, ev.dur*0.5));
-          rig.synth.triggerAttackRelease(freq, ev.dur, t, ev.vel);
-        } else if(ev.orn==='grace'){
-          rig.synth.triggerAttackRelease(freq*0.94, Math.min(0.08, ev.dur*0.25), t, ev.vel*0.8);
-          rig.synth.triggerAttackRelease(freq, ev.dur*0.9, t + Math.min(0.06, ev.dur*0.2), ev.vel);
-        } else if(ev.orn==='trill'){
-          const t1 = ev.dur*0.5;
-          rig.synth.triggerAttackRelease(freq*1.03, t1, t, ev.vel*0.9);
-          rig.synth.triggerAttackRelease(freq, ev.dur - t1, t + t1, ev.vel);
+
+      const sixteenthSec = Tone.Time('16n').toSeconds();
+      const minGateSec = 0.11;          // floor for audibility
+      const gateRatio  = 0.92;          // keep tails for smoothness
+      const jitterMs   = 3 + (lick.meta.difficulty/100)*6; // gentler timing humanization
+
+      // Build events; ornaments realized as short note pairs (no mid-note freq surgery)
+      const events = [];
+      for(const n of lick.notes){
+        const t   = Tone.Time(n.time).toSeconds();
+        const dur = Math.max(minGateSec, n.dur * sixteenthSec);
+        const vel = Math.min(1, Math.max(0.05, n.vel));
+
+        const baseEvt = { t, dur: dur*gateRatio, midi: n.midi, vel };
+
+        if(n.ornament === 'grace'){
+          const pre = { t: t, dur: Math.min(0.08, dur*0.25), midi: n.midi-1, vel: vel*0.8 };
+          const main= { t: t + pre.dur*0.9, dur: Math.max(minGateSec*0.6, dur - pre.dur*0.9), midi: n.midi, vel };
+          events.push(pre, main);
+        } else if(n.ornament === 'trill'){
+          const half = Math.min(dur*0.45, 0.18);
+          events.push({ t, dur: half, midi: n.midi+1, vel: vel*0.9 });
+          events.push({ t: t+half*0.9, dur: Math.max(minGateSec*0.6, dur - half*0.9), midi: n.midi, vel });
+        } else if(n.ornament === 'slide' || n.ornament==='bend'){
+          const pre = { t, dur: Math.min(0.10, dur*0.4), midi: n.midi-1, vel: vel*0.85 };
+          const main= { t: t + pre.dur*0.9, dur: Math.max(minGateSec*0.6, dur - pre.dur*0.9), midi: n.midi, vel };
+          events.push(pre, main);
         } else {
-          rig.synth.triggerAttackRelease(freq, ev.dur, t, ev.vel);
+          events.push(baseEvt);
         }
-      }, events).start(0);
+      }
+
+      buildPart(events, lick);
       allowPlayback(true);
     }
+
+    function buildPart(events, lick){
+      part = new Tone.Part((time, ev) => {
+        const t = time + (Math.random()*2 - 1) * ( (3 + (lick.meta.difficulty/100)*6) / 1000 );
+        const freq = Tone.Frequency(ev.midi, 'midi');
+        rig.synth.triggerAttackRelease(freq, ev.dur, t, ev.vel);
+      }, events.map(e => ({ time: e.t, ...e })));
+
+      part.loop = false;
+      part.start(0);
+    }
+
     function generate(settings){
       buildRigForGenre(settings.genre);
       currentLick = MusicEngine.generateLick(settings);
       scheduleLick(currentLick);
       draw(currentLick);
     }
+
     function regenerate(){ if(!currentLick){ generate(settingsFromUI()); } else { generate({...currentLick}); } }
+
     function togglePlay(){
       if(Tone.Transport.state !== 'started'){ Tone.Transport.stop(); Tone.Transport.start('+0.02'); }
       else { Tone.Transport.stop(); }
     }
+
     function toggleLoop(){
       loopOn = !loopOn;
       if(loopOn){
         Tone.Transport.loop = true;
-        const end = part ? part.duration : Tone.Time('2m');
-        Tone.Transport.loopEnd = end;
+        const sixteenthSec = Tone.Time('16n').toSeconds();
+        const last = currentLick?.notes?.at(-1);
+        const lastEnd16 = last ? (()=>{
+          const [b,bt,s] = last.time.split(':').map(n=>parseInt(n,10));
+          return b*16 + bt*4 + s + last.dur;
+        })() : 32;
+        Tone.Transport.loopEnd = lastEnd16 * sixteenthSec + 0.01;
         els.btnLoop.textContent = 'Loop: On';
       } else {
         Tone.Transport.loop = false;
         els.btnLoop.textContent = 'Loop';
       }
     }
-    UI.bindHandlers(generate, regenerate, togglePlay, toggleLoop, startAudio);
+
+    bindHandlers(generate, regenerate, togglePlay, toggleLoop, startAudio);
   })();
   </script>
 </body>
