@@ -1,634 +1,598 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Lick Generator</title>
-<style>
-  :root{
-    --bg:#0f1720; --card:#0b1220; --accent:#8bdcff; --muted:#9aa6b2; --glass: rgba(255,255,255,0.03);
-    --radius:12px; --padding:14px;
-  }
-  *{box-sizing:border-box;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071021 0%, #081827 100%); color:#e6eef6;}
-  .wrap{max-width:980px;margin:28px auto;padding:18px;}
-  header{display:flex;gap:14px;align-items:center;margin-bottom:16px;}
-  h1{font-size:18px;margin:0;font-weight:600;}
-  p.lead{margin:0;color:var(--muted);font-size:13px;}
-  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px;}
-  @media (max-width:720px){ .grid{grid-template-columns:1fr;} }
-  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:var(--padding); border-radius:var(--radius); box-shadow: 0 4px 20px rgba(3,7,15,0.6);}
-  label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
-  select, input[type=range], input[type=number], button{width:100%;}
-  select, input[type=number]{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;}
-  .hstack{display:flex;gap:8px;}
-  .hstack > * {flex:1;}
-  .controls-row{display:flex;gap:10px;align-items:center;}
-  .note-display{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
-  .note-pill{padding:6px 10px;border-radius:999px;background:var(--glass);font-weight:600;font-size:13px;color:#dff6ff;}
-  .meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:13px;}
-  .buttons{display:flex;gap:10px;margin-top:12px;}
-  button{padding:10px 12px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#6bd9ff);color:#022; font-weight:700;cursor:pointer; box-shadow:0 6px 18px rgba(11,63,80,0.15);}
-  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);box-shadow:none;}
-  .visual{margin-top:12px;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));}
-  .tempo-row{display:flex;gap:8px;align-items:center;}
-  .small{font-size:12px;color:var(--muted);}
-  footer{margin-top:18px;color:var(--muted);font-size:12px;text-align:center;}
-  .sublabel{font-size:11px;color:var(--muted);margin-top:6px;}
-  .note-grid{display:flex;gap:6px;flex-wrap:wrap;}
-  .degree{padding:6px 8px;border-radius:8px;background:rgba(0,0,0,0.15);font-weight:600;}
-  .slider-value{font-size:12px;color:var(--muted);margin-left:8px;min-width:36px;text-align:right;}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lick Generator (Single File)</title>
+  <meta name="theme-color" content="#0b1220"/>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Ctext y='52' x='6' font-size='56'%3E🎸%3C/text%3E%3C/svg%3E">
+  <style>
+    :root{
+      --bg:#0f1720; --card:#0b1220; --accent:#8bdcff; --muted:#9aa6b2; --glass: rgba(255,255,255,0.04);
+      --radius:14px; --pad:16px; --pad2:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#08111f 0%, #0a1626 100%); color:#e6eef6;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+    .wrap{max-width:980px;margin:24px auto;padding:18px}
+    header{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+    h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.2px}
+    .lead{margin:0;color:var(--muted);font-size:13px}
+    .card{background:var(--card); border:1px solid rgba(255,255,255,0.06); border-radius:var(--radius); padding:var(--pad2);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35)}
+    .controls .row{display:flex; gap:12px; align-items:center; margin:12px 0}
+    .controls .row.two{display:grid;grid-template-columns:1fr 1fr; gap:14px}
+    label{width:160px; color:#cbd5e1; font-size:13px}
+    select, input[type="range"]{
+      flex:1; padding:10px 12px; background:#0b1422; border:1px solid rgba(255,255,255,0.08); color:#e6eef6; border-radius:10px;
+      outline:none
+    }
+    .checkbox{display:flex;align-items:center;gap:8px}
+    .buttons{display:flex;flex-wrap:wrap; gap:10px; margin-top:10px}
+    button{
+      background:#0e1b2e; border:1px solid rgba(255,255,255,0.12); color:#e6eef6; padding:10px 14px; border-radius:10px;
+      cursor:pointer; transition:all .15s ease
+    }
+    button:hover{border-color:var(--accent)}
+    button:disabled{opacity:.5; cursor:not-allowed}
+    .hint{color:var(--muted);font-size:12px}
+    .tiny{color:var(--muted);font-size:12px;display:block;margin-top:6px}
+    .viz{margin-top:16px}
+    .vizHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    #metaText{color:#cfe8ff;font-size:12px}
+    #pitchGraph{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0)); border-radius:12px}
+    .axis text{fill:#94a3b8; font-size:10px}
+    .axis line{stroke:rgba(255,255,255,0.15); stroke-width:.7}
+    .axis path{stroke:none}
+    footer{color:var(--muted); font-size:12px; margin-top:16px; display:flex; gap:8px}
+    @media (max-width:720px){
+      label{width:120px}
+      .controls .row.two{grid-template-columns:1fr}
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div>
-      <h1>Lick Generator</h1>
-      <p class="lead">Random, human-feeling licks — choose key, mode, genre, length and temperament (scalar ↔ leapy).</p>
-    </div>
-  </header>
+  <div class="wrap">
+    <header>
+      <h1>🎸 Lick Generator</h1>
+      <p class="lead">Short, musical, genre-authentic licks for play-by-ear training.</p>
+    </header>
 
-  <div class="grid">
-    <div class="card">
-      <label for="key">Key</label>
-      <select id="key">
-        <!-- common keys -->
-        <option value="C">C</option><option value="G">G</option><option value="D">D</option><option value="A">A</option>
-        <option value="E">E</option><option value="B">B</option><option value="F#">F#</option><option value="F">F</option>
-        <option value="Bb">Bb</option><option value="Eb">Eb</option><option value="Ab">Ab</option><option value="Db">Db</option>
-      </select>
-
-      <label class="sublabel">Mode / Scale</label>
-      <select id="mode">
-        <option value="ionian">Ionian (Major)</option>
-        <option value="dorian">Dorian</option>
-        <option value="phrygian">Phrygian</option>
-        <option value="lydian">Lydian</option>
-        <option value="mixolydian">Mixolydian</option>
-        <option value="aeolian">Aeolian (Minor)</option>
-        <option value="locrian">Locrian</option>
-        <option value="harmonic_minor">Harmonic Minor</option>
-        <option value="melodic_minor">Melodic Minor</option>
-        <option value="major_pent">Major Pentatonic</option>
-        <option value="minor_pent">Minor Pentatonic</option>
-        <option value="chromatic">Chromatic</option>
-      </select>
-
-      <label class="sublabel">Genre</label>
-      <select id="genre">
-        <option value="classical">Classical</option>
-        <option value="jazz">Jazz</option>
-        <option value="rock">Rock</option>
-        <option value="metal">Metal</option>
-      </select>
-
-      <div style="height:8px"></div>
-
-      <label>Length (bars of 4/4)</label>
-      <div class="hstack">
-        <input id="bars" type="number" min="1" max="8" value="2" />
-        <div style="width:14px"></div>
-        <div class="tempo-row">
-          <label class="small">Tempo</label>
-          <input id="tempo" type="number" min="40" max="220" value="100" />
+    <section class="card controls">
+      <div class="row">
+        <label>Key</label>
+        <select id="keySelect" disabled></select>
+      </div>
+      <div class="row">
+        <label>Mode / Scale</label>
+        <select id="modeSelect" disabled></select>
+      </div>
+      <div class="row">
+        <label>Genre</label>
+        <select id="genreSelect" disabled></select>
+      </div>
+      <div class="row two">
+        <div>
+          <label>Length (bars)</label>
+          <select id="lengthSelect" disabled></select>
+        </div>
+        <div>
+          <label># Notes</label>
+          <select id="notesSelect" disabled></select>
         </div>
       </div>
-
-      <label class="sublabel">Amount of notes (approx)</label>
-      <input id="notesCount" type="number" min="1" max="128" value="16" />
-
-      <label style="margin-top:10px;">Scalar ⇄ Leapy</label>
-      <div class="hstack">
-        <input id="scalar" type="range" min="0" max="100" value="40" />
-        <div class="slider-value" id="scalarVal">40</div>
+      <div class="row">
+        <label>Scalar ↔ Leapy</label>
+        <input id="scalarLeapy" type="range" min="0" max="100" value="65" disabled />
+        <div class="hint">More steps ←→ More leaps</div>
       </div>
-
-      <label style="margin-top:10px;">Difficulty (1 — 10)</label>
-      <div class="hstack">
-        <input id="difficulty" type="range" min="1" max="10" value="4" />
-        <div class="slider-value" id="diffVal">4</div>
+      <div class="row">
+        <label>Difficulty</label>
+        <input id="difficulty" type="range" min="0" max="100" value="40" disabled />
+        <div class="hint">Rhythm, density, range, ornaments</div>
       </div>
-
+      <div class="row two">
+        <div class="checkbox">
+          <input type="checkbox" id="toggleViz" checked disabled />
+          <label for="toggleViz">Show visualizer</label>
+        </div>
+        <div class="checkbox">
+          <input type="checkbox" id="toggleSwing" disabled />
+          <label for="toggleSwing">Swing (Jazz)</label>
+        </div>
+      </div>
       <div class="buttons">
-        <button id="generate">Generate</button>
-        <button class="ghost" id="play">Play</button>
-        <button class="ghost" id="download">Download JSON</button>
+        <button id="btnGenerate" disabled>Generate Lick</button>
+        <button id="btnRegenerate" disabled>Regenerate</button>
+        <button id="btnPlay" disabled>Play</button>
+        <button id="btnLoop" disabled>Loop</button>
+        <button id="btnStartAudio">Enable Audio</button>
       </div>
+      <small class="tiny">Tip: tap “Enable Audio” once (required by mobile browsers), then Generate → Play.</small>
+    </section>
 
-      <div class="meta" id="metaArea">
-        <div class="small">Scale: <span id="scaleSummary">—</span></div>
-        <div class="small">Pattern: <span id="patternSummary">—</span></div>
+    <section class="card viz" id="vizCard" hidden>
+      <div class="vizHeader">
+        <div id="metaText">—</div>
       </div>
-    </div>
+      <svg id="pitchGraph" width="100%" height="180" viewBox="0 0 800 180" preserveAspectRatio="none" aria-label="Pitch graph"></svg>
+    </section>
 
-    <div class="card">
-      <label>Notes / Degrees</label>
-      <div class="visual" id="visualArea">
-        <div class="note-display" id="noteDisplay">No lick yet — hit Generate.</div>
-        <div class="note-grid" id="degreeGrid" style="margin-top:8px"></div>
-      </div>
-
-      <label style="margin-top:12px;">Playback controls</label>
-      <div style="display:flex;gap:8px;margin-top:6px;">
-        <button id="playback">Play</button>
-        <button id="stop" class="ghost">Stop</button>
-        <button id="humanize" class="ghost">Toggle Humanize</button>
-      </div>
-
-      <div style="margin-top:10px;">
-        <label class="small">Humanize amount: <span id="humanVal">25ms</span></label>
-        <input id="humanAmount" type="range" min="0" max="120" value="25" />
-      </div>
-    </div>
+    <footer>
+      <span>single-file v1.0</span> • <span>Tone.js client-side only</span>
+    </footer>
   </div>
 
-  <footer>Drop this file into a GitHub Pages repo. Want MIDI, tablature export, or tighter genre voices? I can add them.</footer>
-</div>
+  <!-- Tone.js (single dependency) -->
+  <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
 
-<script>
-/*
-  Lick Generator
-  - Generates a sequence of notes (MIDI numbers) and durations with genre-aware probabilities.
-  - Plays using WebAudio with a plucked-ish envelope.
-  - Single-file, mobile-friendly.
-*/
-
-(() => {
-  // ---- Utilities ----
-  const SEMITONE = 1;
-  const NoteNamesSharps = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-  const NoteNamesFlats  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
-  const keyToRoot = {
-    'C':0,'G':7,'D':2,'A':9,'E':4,'B':11,'F#':6,'F':5,'Bb':10,'Eb':3,'Ab':8,'Db':1
-  };
-
-  function midiToFreq(m){ return 440 * Math.pow(2, (m-69)/12); }
-  function mod(n,m){ return ((n % m)+m)%m; }
-  function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
-  function chooseWeighted(items, weights){
-    const sum = weights.reduce((a,b)=>a+b,0);
-    let r = Math.random()*sum;
-    for(let i=0;i<items.length;i++){
-      r -= weights[i];
-      if(r <= 0) return items[i];
+  <!-- === theory.js === -->
+  <script>
+  window.Theory = (() => {
+    const NOTE_NAMES_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+    const NOTE_NAMES_FLAT  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+    const keys = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+    const scaleDefs = {
+      'major (Ionian)':           [0,2,4,5,7,9,11],
+      'natural minor (Aeolian)':  [0,2,3,5,7,8,10],
+      'harmonic minor':           [0,2,3,5,7,8,11],
+      'melodic minor (asc.)':     [0,2,3,5,7,9,11],
+      'Dorian':                   [0,2,3,5,7,9,10],
+      'Phrygian':                 [0,1,3,5,7,8,10],
+      'Lydian':                   [0,2,4,6,7,9,11],
+      'Mixolydian':               [0,2,4,5,7,9,10],
+      'Locrian':                  [0,1,3,5,6,8,10],
+      'major pentatonic':         [0,2,4,7,9],
+      'minor pentatonic':         [0,3,5,7,10],
+      'blues (hexatonic)':        [0,3,5,6,7,10],
+      'whole-tone':               [0,2,4,6,8,10],
+      'chromatic':                [0,1,2,3,4,5,6,7,8,9,10,11],
+      'octatonic diminished (H-W)': [0,1,3,4,6,7,9,10],
+      'octatonic diminished (W-H)': [0,2,3,5,6,8,9,11]
+    };
+    function pcFromKey(key){
+      const map = {'C':0,'C#':1,'Db':1,'D':2,'Eb':3,'D#':3,'E':4,'F':5,'F#':6,'Gb':6,'G':7,'Ab':8,'G#':8,'A':9,'Bb':10,'A#':10,'B':11};
+      return map[key];
     }
-    return items[items.length-1];
-  }
-  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
-
-  // ---- Scales / Modes ----
-  const SCALES = {
-    ionian:         [0,2,4,5,7,9,11],
-    dorian:         [0,2,3,5,7,9,10],
-    phrygian:       [0,1,3,5,7,8,10],
-    lydian:         [0,2,4,6,7,9,11],
-    mixolydian:     [0,2,4,5,7,9,10],
-    aeolian:        [0,2,3,5,7,8,10],
-    locrian:        [0,1,3,5,6,8,10],
-    harmonic_minor: [0,2,3,5,7,8,11],
-    melodic_minor:  [0,2,3,5,7,9,11],
-    major_pent:     [0,2,4,7,9],
-    minor_pent:     [0,3,5,7,10],
-    chromatic:      [0,1,2,3,4,5,6,7,8,9,10,11]
-  };
-
-  // ---- Genre profiles ----
-  const GENRES = {
-    classical: {
-      degreeWeights: [1,1,1,1,1,1,1],
-      rhythmic: {subdivs:[4,8,16],weight:[0.2,0.6,0.2]},
-      approach: {chromaticApproach:0.05, grace:0.06},
-      articulation: {legato:0.6, stacc:0.4},
-      emphasis: (mode) => [1,0.8,1,0.9,1,0.8,0.9] // slight variability
-    },
-    jazz: {
-      degreeWeights: [1,0.9,0.9,0.9,1.1,0.9,0.9],
-      rhythmic: {subdivs:[8,16,24],weight:[0.2,0.5,0.3]}, // include triplets (24)
-      approach: {chromaticApproach:0.2, enclosures:0.15},
-      articulation: {swing:0.6, legato:0.4},
-      emphasis: (mode) => [1.0,0.9,1.0,0.95,1.1,0.9,0.95]
-    },
-    rock: {
-      degreeWeights: [1,0.8,0.8,0.9,1.2,0.9,1.1],
-      rhythmic: {subdivs:[8,16],weight:[0.7,0.3]},
-      approach: {chromaticApproach:0.06, bends:0.12},
-      articulation: {palmMute:0.25, accents:0.4},
-      emphasis: (mode) => [1.2,0.6,0.7,0.8,1.3,0.7,1.0]
-    },
-    metal: {
-      degreeWeights: [1,0.7,0.7,0.8,1.3,0.8,1.1],
-      rhythmic: {subdivs:[16,32],weight:[0.6,0.4]},
-      approach: {chromaticApproach:0.12, wideLeaps:0.2},
-      articulation: {stacc:0.7, accents:0.6},
-      emphasis: (mode) => [1.3,0.6,0.6,0.7,1.5,0.7,1.1]
+    function getScale(key, mode){
+      const steps = scaleDefs[mode];
+      if(!steps) throw new Error('Unknown mode: '+mode);
+      const tonicPc = pcFromKey(key);
+      return steps.map(s => (tonicPc + s) % 12);
     }
-  };
-
-  // ---- Element refs ----
-  const $ = id => document.getElementById(id);
-  const keyEl = $('key'), modeEl = $('mode'), genreEl = $('genre'), barsEl = $('bars');
-  const notesCountEl = $('notesCount'), scalarEl = $('scalar'), scalarVal = $('scalarVal');
-  const diffEl = $('difficulty'), diffVal = $('diffVal'), tempoEl = $('tempo');
-  const generateBtn = $('generate'), playBtn = $('play'), playbackBtn = $('playback'), stopBtn = $('stop'), downloadBtn = $('download');
-  const noteDisplay = $('noteDisplay'), scaleSummary = $('scaleSummary'), patternSummary = $('patternSummary');
-  const humanizeBtn = $('humanize'), humanAmountEl = $('humanAmount'), humanVal = $('humanVal');
-
-  scalarEl.oninput = ()=> scalarVal.textContent = scalarEl.value;
-  diffEl.oninput = ()=> diffVal.textContent = diffEl.value;
-  humanAmountEl.oninput = ()=> humanVal.textContent = humanAmountEl.value + 'ms';
-
-  // ---- Audio setup ----
-  let audioCtx = null;
-  function ensureAudio(){
-    if(!audioCtx){
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-  }
-
-  function createPluck(frequency, startTime, duration, velocity=1){
-    const ctx = audioCtx;
-    // two oscillators + bandpass + pluck envelope
-    const o = ctx.createOscillator();
-    o.type = 'triangle';
-    o.frequency.value = frequency;
-
-    const o2 = ctx.createOscillator();
-    o2.type = 'sine';
-    o2.frequency.value = frequency * 2;
-
-    const g = ctx.createGain();
-    g.gain.value = 0;
-
-    const bp = ctx.createBiquadFilter();
-    bp.type = 'bandpass';
-    bp.frequency.value = Math.min(2000, frequency*4 + 200);
-
-    o.connect(g);
-    o2.connect(g);
-    g.connect(bp);
-    bp.connect(ctx.destination);
-
-    const now = startTime;
-    const attack = Math.max(0.005, duration*0.06);
-    const decay = Math.max(0.04, duration*0.2);
-    g.gain.setValueAtTime(0, now);
-    g.gain.linearRampToValueAtTime(velocity*0.9, now+attack);
-    g.gain.exponentialRampToValueAtTime(0.0005, now+attack+decay+Math.min(0.05,duration*0.08));
-
-    o.start(now);
-    o2.start(now);
-    o.stop(now + duration + 0.05);
-    o2.stop(now + duration + 0.05);
-  }
-
-  // ---- Scale builder ----
-  function buildScale(rootMidi, modeName){
-    const pattern = SCALES[modeName];
-    const notes = [];
-    // choose octave so that typical melodic center is around midi 52-76
-    const baseOct = Math.floor((rootMidi - 12) / 12);
-    for(let o=baseOct; o<=baseOct+3; o++){
-      for(const step of pattern){
-        notes.push(o*12 + ((rootMidi + step) % 12));
+    function quantizeToScale(pc, pcs){
+      if(pcs.includes(pc)) return pc;
+      for(let d=1; d<12; d++){
+        if(pcs.includes((pc + d) % 12)) return (pc + d) % 12;
+        if(pcs.includes((pc - d + 12) % 12)) return (pc - d + 12) % 12;
       }
+      return pc;
     }
-    // unique & sorted
-    const uniq = Array.from(new Set(notes)).sort((a,b)=>a-b);
-    return uniq;
-  }
-
-  // helper to get named note
-  function nameFromMidi(midi){
-    const name = NoteNamesSharps[midi % 12];
-    const octave = Math.floor(midi / 12) - 1;
-    return `${name}${octave}`;
-  }
-
-  // ---- Lick generation ----
-  function generateLick(options){
-    // options: key, mode, genre, bars, notesCount, scalar (0..100), difficulty (1..10), tempo
-    const root = keyToRoot[options.key];
-    const rootMidi = 60 + (root - 0); // middle C = 60; shift root into C4-centered
-    const scalePattern = SCALES[options.mode] || SCALES.ionian;
-
-    // Build a pool of MIDI notes across a reasonable range (Guitar-friendly-ish 40-84)
-    const scaleNotes = buildScale(rootMidi, options.mode).filter(n => n >= 40 && n <= 88);
-    if(scaleNotes.length === 0){
-      // fallback chromatic around root
-      for(let i=48;i<=84;i++) scaleNotes.push(i);
+    function wrapRegister(midi, min=52, max=76){ while(midi < min) midi += 12; while(midi > max) midi -= 12; return midi; }
+    function pickWeighted(weightMap){
+      const entries = Object.entries(weightMap);
+      const total = entries.reduce((s,[,w]) => s+w, 0);
+      let r = Math.random()*total;
+      for(const [v,w] of entries){ if((r -= w) <= 0) return isNaN(+v)?v:+v; }
+      return entries[entries.length-1][0];
     }
-
-    // Genre profile
-    const g = GENRES[options.genre] || GENRES.classical;
-    // degree weights: map scale degrees to weights (repeat octave)
-    function degreeWeightsForPool(){
-      // map each note to its scale degree (0..scalePattern.length-1)
-      const weights = [];
-      for(const midi of scaleNotes){
-        const deg = mod(midi - rootMidi,12);
-        // find degree index:
-        let idx = scalePattern.indexOf(deg);
-        if(idx<0) idx = 0;
-        // base weight from genre emphasis + slight octave bias (lead center)
-        const emphasis = (g.emphasis ? g.emphasis(options.mode) : [1,1,1,1,1,1,1])[idx % (g.emphasis ? g.emphasis(options.mode).length : 7)];
-        // prefer middle register more
-        const octaveBias = 1 - Math.abs((midi - 64)/20);
-        weights.push(Math.max(0.05, emphasis * octaveBias));
-      }
-      return weights;
+    function intervalHistogramFromScalarLeapy(scalarLeapy){
+      const t = scalarLeapy/100;
+      return {1:8*t+1*(1-t),2:7*t+1*(1-t),3:5*t+2*(1-t),4:3*t+4*(1-t),5:2*t+6*(1-t),6:2*t+5*(1-t),7:1*t+4*(1-t),8:1*t+3*(1-t)};
     }
-
-    const baseWeights = degreeWeightsForPool();
-
-    // rhythmic subdivision choices
-    const subdivs = (g.rhythmic && g.rhythmic.subdivs) ? g.rhythmic.subdivs : [8,16];
-    const subdivWeights = (g.rhythmic && g.rhythmic.weight) ? g.rhythmic.weight : subdivs.map(_=>1);
-    // map number of notes to approximate durations across bars
-    const totalBeats = options.bars * 4;
-    // We'll pick 'notesCount' items and fit into totalBeats
-    // Rhythm generation: choose durations from subdivisions
-    function pickDurations(count){
-      const durations = [];
-      let remainingBeats = totalBeats;
-      let attempts = 0;
-      while(durations.length < count && attempts < count*6){
-        attempts++;
-        const sub = chooseWeighted(subdivs, subdivWeights); // subdivisions per beat: e.g., 8 => 1/8 note
-        // duration in beats:
-        const dur = 1/(sub/4); // e.g., sub=8 => dur=0.5 (eighth)
-        // clamp so we don't exceed remaining beats badly
-        if(remainingBeats - dur >= -0.0001){
-          durations.push(dur);
-          remainingBeats -= dur;
-        } else {
-          // if too big, try a smaller subdiv
-          const smaller = subdivs.slice().reverse();
-          let placed=false;
-          for(const s of smaller){
-            const d = 1/(s/4);
-            if(remainingBeats - d >= -0.0001){
-              durations.push(d);
-              remainingBeats -= d;
-              placed=true; break;
-            }
-          }
-          if(!placed) break;
-        }
-      }
-      // if we have leftover beats, distribute as ties or extend last note
-      if(remainingBeats > 0.001 && durations.length>0){
-        durations[durations.length-1] += remainingBeats;
-        remainingBeats = 0;
-      }
-      return durations;
+    function chordTonesFor(key, mode){
+      const pcs = getScale(key, mode);
+      return new Set([0,2,4,6].map(i => pcs[i % pcs.length]));
     }
+    function isChordTone(pc, key, mode){ return chordTonesFor(key, mode).has(pc); }
+    return {
+      keys, scaleDefs, getScale, isChordTone, chordTonesFor,
+      pcFromKey, quantizeToScale, wrapRegister, pickWeighted, intervalHistogramFromScalarLeapy
+    };
+  })();
+  </script>
 
-    const durations = pickDurations(options.notesCount);
-    const finalCount = durations.length;
+  <!-- === toneSetup.js === -->
+  <script>
+  window.AudioRig = (() => {
+    let ready = false;
+    const limiter = new Tone.Limiter(-3).toDestination();
+    const masterGain = new Tone.Gain(0.5).connect(limiter);
+    const makeReverb = (room=0.2) => new Tone.JCReverb(room).connect(masterGain);
 
-    // Determine allowed interval jump based on difficulty and genre
-    const maxJumpMap = {1:3,2:4,3:5,4:6,5:8,6:10,7:12,8:16,9:20,10:24};
-    let maxJump = maxJumpMap[clamp(Math.round(options.difficulty),1,10)];
-    // make metal a bit more leap-happy
-    if(options.genre === 'metal') maxJump += 4;
-
-    // scalar tendency: probability that next note is adjacent step (scale step)
-    const scalarProb = clamp(options.scalar / 100, 0, 1);
-
-    // Main loop: pick notes sequentially with Markov-ish local choices to feel human
-    const notes = [];
-    // choose a starting note (prefer tonic or dominant)
-    const tonicCandidates = [];
-    for(let i=0;i<scaleNotes.length;i++){
-      const midi = scaleNotes[i];
-      const deg = mod(midi - rootMidi,12);
-      if(deg === 0) tonicCandidates.push(i);
-      if(deg === 7%12 || deg === 7) tonicCandidates.push(i);
+    function makeClassical(){
+      const reverb = makeReverb(0.18);
+      const eq = new Tone.EQ3(-1,0,0).connect(reverb);
+      const pluck = new Tone.PluckSynth({attackNoise:0.5,dampening:4200,resonance:0.6}).connect(eq);
+      return { synth: pluck, chain:[eq,reverb], cleanup:()=>{pluck.dispose(); eq.dispose(); reverb.dispose();} };
     }
-    const startIdx = tonicCandidates.length ? tonicCandidates[Math.floor(Math.random()*tonicCandidates.length)] : Math.floor(scaleNotes.length/2);
-    let currentIdx = startIdx;
-
-    const poolSize = scaleNotes.length;
-
-    // helper to pick next index
-    function pickNextIndex(prevIdx){
-      // with scalarProb, bias to step +/- 1 within scale degrees
-      if(Math.random() < scalarProb){
-        // step up or down with bias toward step that stays in comfortable range
-        const dir = Math.random() < 0.55 ? 1 : -1;
-        let candidate = prevIdx + dir;
-        // clamp to pool
-        candidate = clamp(candidate, 0, poolSize-1);
-        // if too far from prev (rare), fallback to weighted pick
-        if(Math.abs(scaleNotes[candidate] - scaleNotes[prevIdx]) > maxJump) {
-          // weighted pick instead
-        } else {
-          return candidate;
-        }
-      }
-      // otherwise weighted random across pool but with maxJump and degree weights
-      const weights = [];
-      for(let i=0;i<poolSize;i++){
-        const midi = scaleNotes[i];
-        const interval = Math.abs(midi - scaleNotes[prevIdx]);
-        let w = baseWeights[i];
-        if(interval > maxJump) w *= 0.01;
-        // favor nearby a bit
-        w *= Math.max(0.2, 1 - (interval / (maxJump*1.5)));
-        weights.push(w);
-      }
-      // small random jitter
-      for(let i=0;i<weights.length;i++) weights[i] *= (0.6 + Math.random()*0.8);
-      // pick
-      const chosen = chooseWeighted([...Array(poolSize).keys()], weights);
-      return chosen;
+    function makeJazz(){
+      const reverb = makeReverb(0.22);
+      const eq = new Tone.EQ3(-2,1,-2).connect(reverb);
+      const comp = new Tone.Compressor(-18,3).connect(eq);
+      const synth = new Tone.AMSynth({oscillator:{type:'sine'}, envelope:{attack:0.003,decay:0.2,sustain:0.7,release:0.3}}).connect(comp);
+      return { synth, chain:[comp,eq,reverb], cleanup:()=>{synth.dispose(); comp.dispose(); eq.dispose(); reverb.dispose();} };
     }
+    function makeRock(){
+      const reverb = makeReverb(0.12);
+      const filter = new Tone.Filter(1200,'lowpass').connect(reverb);
+      const dist = new Tone.Distortion(0.25).connect(filter);
+      const synth = new Tone.MonoSynth({oscillator:{type:'sawtooth'}, envelope:{attack:0.005,decay:0.15,sustain:0.4,release:0.2}}).connect(dist);
+      return { synth, chain:[dist,filter,reverb], cleanup:()=>{synth.dispose(); dist.dispose(); filter.dispose(); reverb.dispose();} };
+    }
+    function makeMetal(){
+      const reverb = makeReverb(0.08);
+      const filter = new Tone.Filter(1500,'lowpass').connect(reverb);
+      const dist = new Tone.Distortion(0.45).connect(filter);
+      const synth = new Tone.MonoSynth({oscillator:{type:'square'}, envelope:{attack:0.002,decay:0.12,sustain:0.2,release:0.08}}).connect(dist);
+      return { synth, chain:[dist,filter,reverb], cleanup:()=>{synth.dispose(); dist.dispose(); filter.dispose(); reverb.dispose();} };
+    }
+    function bpmForGenre(genre){ return genre==='Jazz'?132 : genre==='Rock'?120 : genre==='Metal'?140 : 96; }
+    async function ensureStarted(){ if(!ready){ await Tone.start(); ready = true; } }
+    return { makeClassical, makeJazz, makeRock, makeMetal, bpmForGenre, ensureStarted, masterGain };
+  })();
+  </script>
 
-    // optionally add chromatic approach notes for jazz/metal
-    function maybeChromaticApproach(targetMidi){
-      if(Math.random() < (g.approach && g.approach.chromaticApproach ? g.approach.chromaticApproach : 0.06)){
-        // approach from semitone below or above
-        const dir = Math.random() < 0.5 ? -1 : 1;
-        const approachMidi = targetMidi + dir;
-        // ensure in manageable range
-        if(approachMidi >= 36 && approachMidi <= 96) return approachMidi;
+  <!-- === musicEngine.js === -->
+  <script>
+  window.MusicEngine = (() => {
+    const { getScale, isChordTone, pcFromKey, pickWeighted,
+            intervalHistogramFromScalarLeapy, wrapRegister, quantizeToScale } = Theory;
+
+    function rhythmPool(difficulty){
+      const d = difficulty;
+      const pool = [];
+      if(d <= 20){
+        pool.push({len:4, rest:false},{len:2, rest:false});
+        pool.push({len:2, rest:true});
+      } else if(d <= 50){
+        pool.push({len:2, rest:false},{len:3, rest:false},{len:1, rest:false});
+        pool.push({len:2, rest:true},{len:1, rest:true});
+      } else if(d <= 80){
+        pool.push({len:1, rest:false},{len:2, rest:false},{len:3, rest:false});
+        pool.push({len:1, rest:true});
+      } else {
+        pool.push({len:1, rest:false},{len:2, rest:false},{len:3, rest:false});
+        pool.push({len:3, rest:true},{len:1, rest:true});
       }
+      return pool;
+    }
+    function chooseDur(pool){ return pool[Math.floor(Math.random()*pool.length)]; }
+    function chooseInterval(hist){
+      const abs = pickWeighted(hist);
+      const dir = Math.random()<0.52 ? 1 : -1;
+      return dir * (abs===8 ? 12 : abs);
+    }
+    function pickStartMidi(key, mode, baseRange=[52,76]){
+      const pcs = getScale(key, mode);
+      const tonicPc = pcs[0];
+      let midi = wrapRegister(48 + tonicPc, baseRange[0], baseRange[1]);
+      if(Math.random() < 0.4){
+        midi = wrapRegister(midi + (pcs[1]-pcs[0] + 12) % 12, baseRange[0], baseRange[1]);
+      }
+      return midi;
+    }
+    function nearestScalePc(pc, pcs){ return quantizeToScale(pc, pcs); }
+    function ornamentFor(genre, difficulty){
+      const r = Math.random(), d = difficulty/100;
+      if(genre==='Classical'){ if(r<0.12*d) return 'grace'; if(r<0.16*d) return 'trill'; }
+      else if(genre==='Jazz'){ if(r<0.20*d) return 'grace'; if(r<0.28*d) return 'slide'; }
+      else if(genre==='Rock'){ if(r<0.30*d) return 'bend'; if(r<0.36*d) return 'slide'; }
+      else if(genre==='Metal'){ if(r<0.20*d) return 'slide'; }
       return null;
     }
+    function generateLick(opts){
+      const { key='C', mode='major (Ionian)', genre='Classical',
+              bars=2, numNotes=12, scalarLeapy=60, difficulty=40, swing=false } = opts;
 
-    // produce note list
-    for(let i=0;i<finalCount;i++){
-      const idx = (i === 0) ? currentIdx : pickNextIndex(currentIdx);
-      currentIdx = idx;
-      let midi = scaleNotes[idx];
-      // difficulty can add slides/accidentals: chance to shift off-scale
-      if(Math.random() < clamp((options.difficulty-3)/18, 0, 0.35)) {
-        // choose nearby semitone shift (jazz enclosures / metal chromatics)
-        if(Math.random() < 0.5) midi += (Math.random()<0.5 ? -1 : 1);
+      const scalePcs = getScale(key, mode);
+      const tonicPc = scalePcs[0];
+      const preferChordToneBiasEnd = 0.85;
+      const bpm = window.AudioRig.bpmForGenre(genre);
+
+      const beatsPerBar = 4;
+      const total16 = beatsPerBar * 4 * bars;
+      const rPool = rhythmPool(difficulty);
+      const targetNotes = Math.max(4, Math.min(32, numNotes));
+      const notes = [];
+
+      const intHist = intervalHistogramFromScalarLeapy(scalarLeapy);
+      let midi = pickStartMidi(key, mode);
+
+      function indexToTicks(i){
+        const bar = Math.floor(i / 16);
+        const within = i % 16;
+        const beat = Math.floor(within / 4);
+        const six = within % 4;
+        return `${bar}:${beat}:${six}`;
       }
-      // genre-specific ornaments
-      let pre = null;
-      if(options.genre === 'jazz' && Math.random() < 0.15){
-        // small enclosure: note -> chromatic -> target
-        const approach = maybeChromaticApproach(midi);
-        if(approach) {
-          notes.push({midi: approach, dur: durations[i] * 0.4, tag:'approach'});
-          // shorten main note
-          notes.push({midi: midi, dur: durations[i] * 0.6, tag:'target'});
-          continue;
+
+      let i = 0, placed = 0;
+      let phraseBoundaryCandidates = [Math.floor(total16/2), total16-1];
+
+      while(i < total16 && placed < targetNotes){
+        const {len, rest} = chooseDur(rPool);
+        if(i + len > total16) break;
+
+        if(!rest){
+          if(placed > 0){
+            const step = chooseInterval(intHist);
+            let pc = ((midi % 12) + step + 12) % 12;
+            pc = nearestScalePc(pc, scalePcs);
+            let candidate = (Math.floor((midi+step)/12)*12) + pc;
+            candidate = wrapRegister(candidate, 50 - Math.floor(difficulty/10), 80 + Math.floor(difficulty/20));
+            midi = candidate;
+          }
+          const isBoundary = phraseBoundaryCandidates.some(b => Math.abs((i+len)-b) <= 1);
+          const thisPc = ((midi % 12) + 12) % 12;
+          let finalMidi = midi;
+
+          if(isBoundary){
+            if(Math.random() < preferChordToneBiasEnd){
+              const chordSet = Theory.chordTonesFor(key, mode);
+              if(!chordSet.has(thisPc)){
+                const up = (thisPc + 1) % 12, down = (thisPc + 11) % 12;
+                const candidates = [down, up, (thisPc+2)%12, (thisPc+10)%12];
+                const hit = candidates.find(c => chordSet.has(c));
+                if(typeof hit === 'number'){
+                  finalMidi = wrapRegister(midi + ((hit - thisPc + 12) % 12), 48, 84);
+                }
+              }
+            }
+          }
+          const orn = ornamentFor(genre, difficulty);
+          notes.push({
+            midi: finalMidi,
+            time: indexToTicks(i),
+            dur: len,
+            vel: 0.7 + (Math.random()*0.2 - 0.1),
+            isChordTone: isChordTone(((finalMidi%12)+12)%12, key, mode),
+            ornament: orn
+          });
+          placed++;
+        }
+        i += len;
+      }
+
+      if(notes.length){
+        const last = notes[notes.length-1];
+        const lastPc = ((last.midi%12)+12)%12;
+        if(Math.random() < 0.7 && lastPc !== tonicPc){
+          const up = (lastPc + 1) % 12, down = (lastPc + 11) % 12;
+          if(up === tonicPc || down === tonicPc){
+            const delta = (tonicPc - lastPc + 12) % 12;
+            last.midi = wrapRegister(last.midi + delta, 48, 84);
+            last.isChordTone = true;
+          }
         }
       }
-      // classical might favor stepwise passing tones
-      if(options.genre === 'classical' && Math.random() < 0.09){
-        const dir = Math.random()<0.5?-1:1;
-        const passing = midi + dir;
-        if(passing >= 36 && passing <= 96){
-          notes.push({midi: passing, dur: durations[i] * 0.5, tag:'pass'});
-          notes.push({midi: midi, dur: durations[i] * 0.5, tag:'target'});
-          continue;
-        }
+
+      const lick = {
+        key, mode, genre, bpm, swing: (genre==='Jazz' && !!swing) ? 0.58 : 0,
+        notes,
+        meta:{ scalarLeapy, difficulty, phraseTargets: [] }
+      };
+      return lick;
+    }
+    return { generateLick };
+  })();
+  </script>
+
+  <!-- === renderer.js === -->
+  <script>
+  window.Renderer = (() => {
+    function renderPitchGraph(svgEl, lick){
+      const svg = svgEl;
+      const W = svg.viewBox.baseVal.width || 800;
+      const H = svg.viewBox.baseVal.height || 180;
+      while(svg.firstChild) svg.removeChild(svg.firstChild);
+      if(!lick || !lick.notes || !lick.notes.length){ return; }
+
+      const midis = lick.notes.map(n => n.midi);
+      const minM = Math.min(...midis)-2, maxM = Math.max(...midis)+2;
+      const range = Math.max(1, maxM - minM);
+
+      const parseTicks = (ticks) => {
+        const [bar, beat, six] = ticks.split(':').map(x=>parseInt(x,10));
+        return bar*16 + beat*4 + six;
+      };
+      const times16 = lick.notes.map(n => parseTicks(n.time));
+      const maxT = Math.max(...times16.map((t,i)=>t + lick.notes[i].dur));
+
+      const axis = document.createElementNS('http://www.w3.org/2000/svg','g');
+      axis.setAttribute('class','axis');
+      for(let y=0;y<5;y++){
+        const ly = H-10 - (y*(H-20)/4);
+        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1',10); line.setAttribute('x2',W-10);
+        line.setAttribute('y1',ly); line.setAttribute('y2',ly);
+        axis.appendChild(line);
       }
+      svg.appendChild(axis);
 
-      // push main note
-      notes.push({midi: midi, dur: durations[i], tag:'main'});
+      const path = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+      const pts = lick.notes.map((n, idx)=>{
+        const t = times16[idx];
+        const x = 10 + (t / maxT) * (W-20);
+        const y = H-10 - ((n.midi - minM) / range) * (H-20);
+        return `${x},${y}`;
+      }).join(' ');
+      path.setAttribute('points', pts);
+      path.setAttribute('fill','none');
+      path.setAttribute('stroke','white');
+      path.setAttribute('stroke-width','1.5');
+      svg.appendChild(path);
+
+      lick.notes.forEach((n, idx)=>{
+        const t = times16[idx];
+        const x = 10 + (t / maxT) * (W-20);
+        const y = H-10 - ((n.midi - minM) / range) * (H-20);
+        const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        c.setAttribute('cx',x); c.setAttribute('cy',y);
+        c.setAttribute('r', n.isChordTone ? 3.5 : 2.2);
+        c.setAttribute('fill', n.isChordTone ? '#8bdcff' : '#b9c1ca');
+        svg.appendChild(c);
+      });
     }
-
-    // Post-process: humanize durations slightly based on difficulty
-    const humanFactor = clamp(1 - (options.difficulty-1)/9, 0.35, 1);
-    for(const n of notes){
-      n.dur = Math.max(0.03, n.dur * (0.9 + Math.random()*0.2*humanFactor));
+    function metaText(lick){
+      if(!lick) return '—';
+      return `${lick.genre} • ${lick.key} ${lick.mode} • ${lick.bpm} BPM ${lick.swing ? '(swing)' : ''}`;
     }
+    return { renderPitchGraph, metaText };
+  })();
+  </script>
 
-    // Build a simple textual pattern description
-    const pat = `${options.notesCount} notes · ${options.bars} bars · ${options.tempo} bpm · ${options.mode}`;
-    return {notes, scaleNotes, rootMidi, pattern: pat, durations};
-  }
+  <!-- === ui.js + app.js merged === -->
+  <script>
+  window.UI = (() => {
+    const els = {
+      key:      document.getElementById('keySelect'),
+      mode:     document.getElementById('modeSelect'),
+      genre:    document.getElementById('genreSelect'),
+      length:   document.getElementById('lengthSelect'),
+      notes:    document.getElementById('notesSelect'),
+      scalar:   document.getElementById('scalarLeapy'),
+      diff:     document.getElementById('difficulty'),
+      swing:    document.getElementById('toggleSwing'),
+      viz:      document.getElementById('toggleViz'),
+      btnGen:   document.getElementById('btnGenerate'),
+      btnRegen: document.getElementById('btnRegenerate'),
+      btnPlay:  document.getElementById('btnPlay'),
+      btnLoop:  document.getElementById('btnLoop'),
+      btnStart: document.getElementById('btnStartAudio'),
+      vizCard:  document.getElementById('vizCard'),
+      svg:      document.getElementById('pitchGraph'),
+      meta:     document.getElementById('metaText')
+    };
+    let currentSettings = null;
 
-  // ---- Playback scheduling ----
-  let scheduled = [];
-  let humanize = true;
-
-  function playLick(lick, tempo=100, humanAmount=25){
-    if(!lick || !lick.notes || lick.notes.length === 0) return;
-    ensureAudio();
-    const ctx = audioCtx;
-    const now = ctx.currentTime + 0.12;
-    let cursor = now;
-    // tempo: beats per minute; 1 beat = 1 quarter note
-    const beatSec = 60 / tempo;
-    scheduled.forEach(s => s.stop && s.stop());
-    scheduled = [];
-    for(const n of lick.notes){
-      // compute actual duration in seconds (n.dur is in beats)
-      const dur = n.dur * beatSec;
-      // humanize start time
-      const hv = humanize ? (Math.random()*2-1) * (humanAmount/1000) : 0;
-      const start = cursor + Math.max(-0.01, hv);
-      // frequency from MIDI
-      const freq = midiToFreq(n.midi);
-      createPluck(freq, start, Math.max(0.04, dur*0.95), 0.8);
-      cursor += dur;
+    function populateOnce(){
+      Theory.keys.forEach(k=> els.key.add(new Option(k,k)));
+      const order = [
+        'major (Ionian)','natural minor (Aeolian)','harmonic minor','melodic minor (asc.)',
+        'Dorian','Phrygian','Lydian','Mixolydian','Locrian',
+        'major pentatonic','minor pentatonic','blues (hexatonic)',
+        'whole-tone','octatonic diminished (H-W)','octatonic diminished (W-H)','chromatic'
+      ];
+      order.forEach(m => els.mode.add(new Option(m,m)));
+      ['Classical','Jazz','Rock','Metal'].forEach(g=> els.genre.add(new Option(g,g)));
+      [1,2,3,4].forEach(b=> els.length.add(new Option(`${b}`,b)));
+      [4,6,8,10,12,14,16,20,24,28,32].forEach(n=> els.notes.add(new Option(`${n}`,n)));
+      els.key.value='C'; els.mode.value='major (Ionian)'; els.genre.value='Classical';
+      els.length.value='2'; els.notes.value='12';
     }
-  }
-
-  function stopPlayback(){
-    if(audioCtx){
-      // simple suspend
-      try{ audioCtx.suspend(); } catch(e){}
-      setTimeout(()=>{ try{ audioCtx.close(); audioCtx = null;}catch(e){} }, 40);
+    function setEnabled(flag){
+      ['key','mode','genre','length','notes','scalar','diff','swing','viz'].forEach(id => els[id].disabled = !flag);
+      ['btnGen','btnRegen'].forEach(id => els[id].disabled = !flag);
     }
-  }
-
-  // ---- UI wiring ----
-  let lastLick = null;
-
-  function renderLick(lick){
-    if(!lick) { noteDisplay.innerText = 'No lick yet — hit Generate.'; scaleSummary.innerText = '—'; patternSummary.innerText = '—'; return; }
-    // show notes as pills
-    noteDisplay.innerHTML = '';
-    for(const n of lick.notes){
-      const pill = document.createElement('div');
-      pill.className = 'note-pill';
-      pill.textContent = `${nameFromMidi(n.midi)} (${n.tag==='target'?'→':''}${Math.round(n.dur*100)/100}b)`;
-      pill.title = `MIDI ${n.midi}`;
-      noteDisplay.appendChild(pill);
+    function allowPlayback(flag){ els.btnPlay.disabled = !flag; els.btnLoop.disabled = !flag; }
+    function settingsFromUI(){ return {
+      key: els.key.value, mode: els.mode.value, genre: els.genre.value,
+      bars: parseInt(els.length.value,10), numNotes: parseInt(els.notes.value,10),
+      scalarLeapy: parseInt(els.scalar.value,10), difficulty: parseInt(els.diff.value,10),
+      swing: els.swing.checked
+    }; }
+    function toggleSwingVisibility(){ els.swing.parentElement.style.opacity = (els.genre.value==='Jazz') ? '1' : '0.5'; }
+    function bindHandlers(onGenerate, onRegenerate, onPlay, onLoop, onStart){
+      els.btnGen.addEventListener('click', ()=>{ currentSettings = settingsFromUI(); toggleSwingVisibility(); onGenerate(currentSettings); });
+      els.btnRegen.addEventListener('click', ()=>{ if(!currentSettings) currentSettings=settingsFromUI(); onRegenerate(currentSettings); });
+      els.btnPlay.addEventListener('click', onPlay);
+      els.btnLoop.addEventListener('click', onLoop);
+      els.btnStart.addEventListener('click', onStart);
+      els.genre.addEventListener('change', toggleSwingVisibility);
     }
-    // show degree grid
-    const grid = $('degreeGrid');
-    grid.innerHTML = '';
-    const unique = Array.from(new Set(lick.scaleNotes)).slice(0,12);
-    unique.forEach(m=>{
-      const degEl = document.createElement('div');
-      degEl.className = 'degree';
-      degEl.textContent = `${nameFromMidi(m)}`;
-      grid.appendChild(degEl);
+    function showViz(flag){ els.vizCard.hidden = !flag; }
+    function draw(lick){ els.meta.textContent = Renderer.metaText(lick); if(els.viz.checked){ Renderer.renderPitchGraph(els.svg, lick); } }
+    return { els, populateOnce, setEnabled, allowPlayback, bindHandlers, showViz, draw, settingsFromUI, toggleSwingVisibility };
+  })();
+
+  (()=>{
+    const { els, populateOnce, setEnabled, allowPlayback, bindHandlers, showViz, draw, settingsFromUI, toggleSwingVisibility } = UI;
+    let currentLick = null, part = null, rig = null, loopOn = false;
+
+    window.addEventListener('load', () => {
+      populateOnce();
+      setEnabled(false);
+      allowPlayback(false);
+      showViz(true);
+      toggleSwingVisibility();
     });
 
-    scaleSummary.innerText = `${modeEl.value} on ${keyEl.value}`;
-    patternSummary.innerText = `~${Math.round(lick.notes.length)} notes • ${barsEl.value} bars`;
-  }
-
-  generateBtn.onclick = ()=>{
-    const options = {
-      key: keyEl.value,
-      mode: modeEl.value,
-      genre: genreEl.value,
-      bars: Number(barsEl.value),
-      notesCount: Number(notesCountEl.value),
-      scalar: Number(scalarEl.value),
-      difficulty: Number(diffEl.value),
-      tempo: Number(tempoEl.value)
-    };
-    lastLick = generateLick(options);
-    renderLick(lastLick);
-  };
-
-  playbackBtn.onclick = ()=>{
-    if(!lastLick) {
-      generateBtn.click();
-      if(!lastLick) return;
+    async function startAudio(){
+      await AudioRig.ensureStarted();
+      setEnabled(true);
+      els.btnStart.disabled = true;
+      els.btnStart.textContent = 'Audio Ready';
     }
-    humanize = true;
-    ensureAudio();
-    playLick(lastLick, Number(tempoEl.value), Number(humanAmountEl.value));
-  };
-
-  playBtn.onclick = ()=> playbackBtn.click();
-
-  stopBtn.onclick = ()=>{
-    stopPlayback();
-  };
-
-  humanizeBtn.onclick = ()=>{
-    humanize = !humanize;
-    humanizeBtn.classList.toggle('ghost', !humanize);
-    humanizeBtn.textContent = humanize ? 'Toggle Humanize' : 'Humanize Off';
-  };
-
-  downloadBtn.onclick = ()=>{
-    if(!lastLick) return alert('Generate a lick first.');
-    const data = JSON.stringify({
-      meta: {
-        key: keyEl.value,
-        mode: modeEl.value,
-        genre: genreEl.value,
-        bars: Number(barsEl.value),
-        tempo: Number(tempoEl.value)
-      },
-      lick: lastLick
-    }, null, 2);
-    const blob = new Blob([data], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `lick_${keyEl.value}_${modeEl.value}.json`; document.body.appendChild(a); a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  };
-
-  // quick generate on load for instant demo
-  setTimeout(()=> generateBtn.click(), 150);
-})();
-</script>
+    function cleanupTone(){ if(part){ part.stop(); part.dispose(); part=null; } if(rig && rig.cleanup){ rig.cleanup(); rig=null; } }
+    function buildRigForGenre(genre){
+      cleanupTone();
+      if(genre==='Jazz') rig = AudioRig.makeJazz();
+      else if(genre==='Rock') rig = AudioRig.makeRock();
+      else if(genre==='Metal') rig = AudioRig.makeMetal();
+      else rig = AudioRig.makeClassical();
+    }
+    function ensureTransport(lick){
+      Tone.Transport.bpm.value = lick.bpm;
+      if(lick.genre==='Jazz' && lick.swing){
+        Tone.Transport.swing = 1; Tone.Transport.swingSubdivision = '8n'; Tone.Transport.swingAmount = 0.58;
+      } else { Tone.Transport.swing = 0; }
+    }
+    function scheduleLick(lick){
+      ensureTransport(lick);
+      if(part){ part.stop(); part.dispose(); part=null; }
+      const sixteenthDur = Tone.Time('16n').toSeconds();
+      const events = lick.notes.map(n => ({ time: Tone.Time(n.time), dur: n.dur*sixteenthDur, midi: n.midi, vel: n.vel, orn: n.ornament }));
+      const jitterMs = 5 + (lick.meta.difficulty/100)*10;
+      part = new Tone.Part((time, ev) => {
+        const t = time + (Math.random()*jitterMs - jitterMs/2)/1000;
+        const freq = Tone.Frequency(ev.midi, 'midi');
+        if(lick.genre==='Rock' && ev.orn==='bend'){
+          rig.synth.frequency.setValueAtTime(freq, t);
+          rig.synth.frequency.exponentialRampToValueAtTime(freq*1.05, t + ev.dur*0.4);
+          rig.synth.triggerAttackRelease(freq, ev.dur, t, ev.vel);
+        } else if(ev.orn==='slide'){
+          rig.synth.frequency.setValueAtTime(freq*0.97, t);
+          rig.synth.frequency.exponentialRampToValueAtTime(freq, t + Math.min(0.12, ev.dur*0.5));
+          rig.synth.triggerAttackRelease(freq, ev.dur, t, ev.vel);
+        } else if(ev.orn==='grace'){
+          rig.synth.triggerAttackRelease(freq*0.94, Math.min(0.08, ev.dur*0.25), t, ev.vel*0.8);
+          rig.synth.triggerAttackRelease(freq, ev.dur*0.9, t + Math.min(0.06, ev.dur*0.2), ev.vel);
+        } else if(ev.orn==='trill'){
+          const t1 = ev.dur*0.5;
+          rig.synth.triggerAttackRelease(freq*1.03, t1, t, ev.vel*0.9);
+          rig.synth.triggerAttackRelease(freq, ev.dur - t1, t + t1, ev.vel);
+        } else {
+          rig.synth.triggerAttackRelease(freq, ev.dur, t, ev.vel);
+        }
+      }, events).start(0);
+      allowPlayback(true);
+    }
+    function generate(settings){
+      buildRigForGenre(settings.genre);
+      currentLick = MusicEngine.generateLick(settings);
+      scheduleLick(currentLick);
+      draw(currentLick);
+    }
+    function regenerate(){ if(!currentLick){ generate(settingsFromUI()); } else { generate({...currentLick}); } }
+    function togglePlay(){
+      if(Tone.Transport.state !== 'started'){ Tone.Transport.stop(); Tone.Transport.start('+0.02'); }
+      else { Tone.Transport.stop(); }
+    }
+    function toggleLoop(){
+      loopOn = !loopOn;
+      if(loopOn){
+        Tone.Transport.loop = true;
+        const end = part ? part.duration : Tone.Time('2m');
+        Tone.Transport.loopEnd = end;
+        els.btnLoop.textContent = 'Loop: On';
+      } else {
+        Tone.Transport.loop = false;
+        els.btnLoop.textContent = 'Loop';
+      }
+    }
+    UI.bindHandlers(generate, regenerate, togglePlay, toggleLoop, startAudio);
+  })();
+  </script>
 </body>
 </html>
