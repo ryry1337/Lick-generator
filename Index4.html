@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lick Generator — Smooth Audio (Jazz Clear, Fixed Buttons)</title>
+  <meta name="theme-color" content="#0b1220"/>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Ctext y='52' x='6' font-size='56'%3E🎸%3C/text%3E%3C/svg%3E">
+  <style>
+    :root{
+      --bg:#0f1720; --card:#0b1220; --accent:#8bdcff; --muted:#9aa6b2; --glass: rgba(255,255,255,0.04);
+      --radius:14px; --pad:16px; --pad2:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#08111f 0%, #0a1626 100%); color:#e6eef6;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+    .wrap{max-width:980px;margin:24px auto;padding:18px}
+    header{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+    h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.2px}
+    .lead{margin:0;color:var(--muted);font-size:13px}
+    .card{background:var(--card); border:1px solid rgba(255,255,255,0.06); border-radius:var(--radius); padding:var(--pad2);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35)}
+    .controls .row{display:flex; gap:12px; align-items:center; margin:12px 0}
+    .controls .row.two{display:grid;grid-template-columns:1fr 1fr; gap:14px}
+    label{width:160px; color:#cbd5e1; font-size:13px}
+    select, input[type="range"]{
+      flex:1; padding:10px 12px; background:#0b1422; border:1px solid rgba(255,255,255,0.08); color:#e6eef6; border-radius:10px;
+      outline:none
+    }
+    .checkbox{display:flex;align-items:center;gap:8px}
+    .buttons{display:flex;flex-wrap:wrap; gap:10px; margin-top:10px}
+    button{
+      background:#0e1b2e; border:1px solid rgba(255,255,255,0.12); color:#e6eef6; padding:10px 14px; border-radius:10px;
+      cursor:pointer; transition:all .15s ease
+    }
+    button:hover{border-color:var(--accent)}
+    button:disabled{opacity:.5; cursor:not-allowed}
+    .hint{color:var(--muted);font-size:12px}
+    .tiny{color:var(--muted);font-size:12px;display:block;margin-top:6px}
+    .viz{margin-top:16px}
+    .vizHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    #metaText{color:#cfe8ff;font-size:12px}
+    #pitchGraph{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0)); border-radius:12px}
+    .axis line{stroke:rgba(255,255,255,0.15); stroke-width:.7}
+    footer{color:var(--muted); font-size:12px; margin-top:16px; display:flex; gap:8px}
+    @media (max-width:720px){
+      label{width:120px}
+      .controls .row.two{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🎸 Lick Generator</h1>
+      <p class="lead">Short, musical, genre-authentic licks for play-by-ear training (fixed button handling).</p>
+    </header>
+
+    <section class="card controls">
+      <div class="row">
+        <label>Key</label>
+        <select id="keySelect" disabled></select>
+      </div>
+      <div class="row">
+        <label>Mode / Scale</label>
+        <select id="modeSelect" disabled></select>
+      </div>
+      <div class="row">
+        <label>Genre</label>
+        <select id="genreSelect" disabled></select>
+      </div>
+      <div class="row two">
+        <div>
+          <label>Length (bars)</label>
+          <select id="lengthSelect" disabled></select>
+        </div>
+        <div>
+          <label># Notes</label>
+          <select id="notesSelect" disabled></select>
+        </div>
+      </div>
+      <div class="row">
+        <label>Scalar ↔ Leapy</label>
+        <input id="scalarLeapy" type="range" min="0" max="100" value="65" disabled />
+        <div class="hint">More steps ←→ More leaps</div>
+      </div>
+      <div class="row">
+        <label>Difficulty</label>
+        <input id="difficulty" type="range" min="0" max="100" value="40" disabled />
+        <div class="hint">Rhythm, density, range, ornaments</div>
+      </div>
+      <div class="row two">
+        <div class="checkbox">
+          <input type="checkbox" id="toggleViz" checked disabled />
+          <label for="toggleViz">Show visualizer</label>
+        </div>
+        <div class="checkbox">
+          <input type="checkbox" id="toggleSwing" disabled />
+          <label for="toggleSwing">Swing (Jazz)</label>
+        </div>
+      </div>
+      <div class="buttons">
+        <button id="btnGenerate" disabled>Generate Lick</button>
+        <button id="btnRegenerate" disabled>Regenerate</button>
+        <button id="btnPlay" disabled>Play</button>
+        <button id="btnLoop" disabled>Loop</button>
+        <button id="btnStartAudio">Enable Audio</button>
+      </div>
+      <small class="tiny">Tip: tap “Enable Audio” (mobile policy), then Generate → Play.</small>
+    </section>
+
+    <section class="card viz" id="vizCard" hidden>
+      <div class="vizHeader">
+        <div id="metaText">—</div>
+      </div>
+      <svg id="pitchGraph" width="100%" height="180" viewBox="0 0 800 180" preserveAspectRatio="none"></svg>
+    </section>
+
+    <footer>
+      <span>smooth-audio v1.2 (fixed)</span> • <span>Tone.js, client-side only</span>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+  <!-- === theory.js === -->
+  <script>
+  window.Theory = (() => {
+    const keys = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+    const scaleDefs = {
+      'major (Ionian)': [0,2,4,5,7,9,11],
+      'natural minor (Aeolian)': [0,2,3,5,7,8,10],
+      'harmonic minor': [0,2,3,5,7,8,11],
+      'melodic minor (asc.)': [0,2,3,5,7,9,11],
+      'Dorian': [0,2,3,5,7,9,10],
+      'Phrygian': [0,1,3,5,7,8,10],
+      'Lydian': [0,2,4,6,7,9,11],
+      'Mixolydian': [0,2,4,5,7,9,10],
+      'Locrian': [0,1,3,5,6,8,10],
+      'major pentatonic': [0,2,4,7,9],
+      'minor pentatonic': [0,3,5,7,10],
+      'blues (hexatonic)': [0,3,5,6,7,10],
+      'whole-tone': [0,2,4,6,8,10],
+      'chromatic': [0,1,2,3,4,5,6,7,8,9,10,11],
+      'octatonic diminished (H-W)': [0,1,3,4,6,7,9,10],
+      'octatonic diminished (W-H)': [0,2,3,5,6,8,9,11]
+    };
+    const pcFromKey = k => ({'C':0,'C#':1,'Db':1,'D':2,'Eb':3,'D#':3,'E':4,'F':5,'F#':6,'Gb':6,'G':7,'Ab':8,'G#':8,'A':9,'Bb':10,'A#':10,'B':11})[k];
+    function getScale(key, mode){ const s = scaleDefs[mode]; const t = pcFromKey(key); return s.map(v => (t+v)%12); }
+    function quantizeToScale(pc, pcs){ if(pcs.includes(pc)) return pc; for(let d=1;d<12;d++){ if(pcs.includes((pc+d)%12)) return (pc+d)%12; if(pcs.includes((pc-d+12)%12)) return (pc-d+12)%12; } return pc; }
+    function wrapRegister(midi, min=52, max=76){ while(midi<min)midi+=12; while(midi>max)midi-=12; return midi; }
+    function pickWeighted(map){ const e=Object.entries(map); const tot=e.reduce((s,[,w])=>s+w,0); let r=Math.random()*tot; for(const[v,w]of e){ if((r-=w)<=0) return isNaN(+v)?v:+v; } return +e[e.length-1][0]; }
+    function intervalHistogramFromScalarLeapy(v){ const t=v/100; return {1:8*t+1*(1-t),2:7*t+1*(1-t),3:5*t+2*(1-t),4:3*t+4*(1-t),5:2*t+6*(1-t),6:2*t+5*(1-t),7:1*t+4*(1-t),8:1*t+3*(1-t)}; }
+    function chordTonesFor(k,m){ const pcs=getScale(k,m); return new Set([0,2,4,6].map(i=>pcs[i%pcs.length])); }
+    function isChordTone(pc,k,m){ return chordTonesFor(k,m).has(pc); }
+    return { keys, scaleDefs, getScale, isChordTone, chordTonesFor, pcFromKey, quantizeToScale, wrapRegister, pickWeighted, intervalHistogramFromScalarLeapy };
+  })();
+  </script>
+
+  <!-- === AudioRig === -->
+  <script>
+  window.AudioRig = (() => {
+    let ready=false;
+    const comp = new Tone.Compressor(-24,3).toDestination();
+    const limiter = new Tone.Limiter(-3).connect(comp);
+    const masterGain = new Tone.Gain(0.6).connect(limiter);
+    Tone.getDestination().volume.value = -6;
+    const makeReverb = () => new Tone.Reverb({decay:1.7,wet:0.12}).connect(masterGain);
+    const env = {attack:0.01,decay:0.12,sustain:0.7,release:0.16};
+
+    function makeClassical(){
+      const rv=makeReverb();
+      const lp=new Tone.Filter({frequency:4200,type:'lowpass',rolloff:-24}).connect(rv);
+      const poly=new Tone.PolySynth(Tone.Synth,{maxPolyphony:8,options:{oscillator:{type:'triangle'},envelope:env}}).connect(lp);
+      return{synth:poly,cleanup:()=>{poly.dispose();lp.dispose();rv.dispose();}};
+    }
+
+    // Jazz tone simplified and clarified
+    function makeJazz(){
+      const rv=makeReverb();
+      const lp=new Tone.Filter({frequency:3400,type:'lowpass',rolloff:-24}).connect(rv);
+      const chorus=new Tone.Chorus({frequency:1.5,delayTime:3,depth:0.25,wet:0.12}).connect(lp);
+      const poly=new Tone.PolySynth(Tone.Synth,{maxPolyphony:8,options:{oscillator:{type:'triangle'},envelope:{attack:0.01,decay:0.1,sustain:0.6,release:0.18}}}).connect(chorus);
+      return{synth:poly,cleanup:()=>{poly.dispose();chorus.dispose();lp.dispose();rv.dispose();}};
+    }
+
+    function makeRock(){
+      const rv=makeReverb();
+      const lp=new Tone.Filter({frequency:2400,type:'lowpass',rolloff:-24}).connect(rv);
+      const dist=new Tone.Distortion(0.18).connect(lp);
+      const mono=new Tone.MonoSynth({
+        oscillator:{type:'sawtooth'},
+        envelope:env,
+        filter:{type:'lowpass',frequency:1800,rolloff:-24},
+        filterEnvelope:{attack:0.005,decay:0.15,sustain:0.4,release:0.12,baseFrequency:800,octaves:2.5}
+      }).connect(dist);
+      return{synth:mono,cleanup:()=>{mono.dispose();dist.dispose();lp.dispose();rv.dispose();}};
+    }
+
+    function makeMetal(){
+      const rv=new Tone.Reverb({decay:1.1,wet:0.07}).connect(masterGain);
+      const lp=new Tone.Filter({frequency:2600,type:'lowpass',rolloff:-24}).connect(rv);
+      const dist=new Tone.Distortion(0.28).connect(lp);
+      const mono=new Tone.MonoSynth({
+        oscillator:{type:'square'},
+        envelope:{attack:0.005,decay:0.12,sustain:0.45,release:0.12},
+        filter:{type:'lowpass',frequency:2000,rolloff:-24},
+        filterEnvelope:{attack:0.004,decay:0.1,sustain:0.5,release:0.08,baseFrequency:700,octaves:3}
+      }).connect(dist);
+      return{synth:mono,cleanup:()=>{mono.dispose();dist.dispose();lp.dispose();rv.dispose();}};
+    }
+
+    function bpmForGenre(g){switch(g){case'Jazz':return128;case'Rock':return112;case'Metal':return132;default:return94;}}
+    async function ensureStarted(){if(!ready){await Tone.start();ready=true;}}
+    return{makeClassical,makeJazz,makeRock,makeMetal,bpmForGenre,ensureStarted,masterGain};
+  })();
+  </script>
+
+  <!-- === MusicEngine === -->
+  <script>
+  window.MusicEngine = (() => {
+    const {getScale,isChordTone,pickWeighted,intervalHistogramFromScalarLeapy,wrapRegister,quantizeToScale} = Theory;
+
+    function rhythmPool(difficulty){
+      const d=difficulty;const pool=[];
+      if(d<=20){pool.push({len:4,rest:false},{len:2,rest:false},{len:2,rest:true});}
+      else if(d<=50){pool.push({len:2,rest:false},{len:3,rest:false},{len:1,rest:false},{len:2,rest:true},{len:1,rest:true});}
+      else if(d<=80){pool.push({len:1,rest:false},{len:2,rest:false},{len:3,rest:false},{len:1,rest:true});}
+      else{pool.push({len:1,rest:false},{len:2,rest:false},{len:3,rest:false},{len:3,rest:true},{len:1,rest:true});}
+      return pool;
+    }
+
+    function chooseDur(p){return p[Math.floor(Math.random()*p.length)];}
+    function chooseInterval(h){const abs=pickWeighted(h);const dir=Math.random()<0.52?1:-1;return dir*(abs===8?12:abs);}
+    function pickStartMidi(k,m,b=[52,76]){const pcs=getScale(k,m);let midi=wrapRegister(48+pcs[0],b[0],b[1]);if(Math.random()<0.4){midi=wrapRegister(midi+((pcs[1]-pcs[0]+12)%12),b[0],b[1]);}return midi;}
+
+    function generateLick(opts){
+      const {key='C',mode='major (Ionian)',genre='Classical',bars=2,numNotes=12,scalarLeapy=60,difficulty=40,swing=false} = opts;
+      const scalePcs=getScale(key,mode);const tonicPc=scalePcs[0];
+      const bpm=AudioRig.bpmForGenre(genre);
+      const beatsPerBar=4,total16=beatsPerBar*4*bars;
+      const rPool=rhythmPool(difficulty);
+      const targetNotes=Math.max(4,Math.min(32,numNotes));
+      const notes=[];const intHist=intervalHistogramFromScalarLeapy(scalarLeapy);
+      let midi=pickStartMidi(key,mode);
+      function indexToTicks(i){const bar=Math.floor(i/16);const within=i%16;const beat=Math.floor(within/4);const six=within%4;return`${bar}:${beat}:${six}`;}
+      let i=0,placed=0;while(i<total16&&placed<targetNotes){
+        const {len,rest}=chooseDur(rPool);
+        if(i+len>total16)break;
+        if(!rest){
+          if(placed>0){
+            const step=chooseInterval(intHist);let pc=((midi%12)+step+12)%12;pc=quantizeToScale(pc,scalePcs);
+            let cand=(Math.floor((midi+step)/12)*12)+pc;cand=wrapRegister(cand,50,80);midi=cand;
+          }
+          notes.push({midi,time:indexToTicks(i),dur:len,vel:0.76+(Math.random()*0.18-0.09),isChordTone:isChordTone(((midi%12)+12)%12,key,mode)});
+          placed++;
+        }
+        i+=len;
+      }
+      return {key,mode,genre,bpm,notes,meta:{scalarLeapy,difficulty,phraseTargets:[]}};
+    }
+    return {generateLick};
+  })();
+  </script>
+
+  <!-- === Renderer === -->
+  <script>
+  window.Renderer = (() => {
+    function renderPitchGraph(svgEl, lick){
+      const svg=svgEl;const W=svg.viewBox.baseVal.width||800,H=svg.viewBox.baseVal.height||180;
+      while(svg.firstChild)svg.removeChild(svg.firstChild);
+      if(!lick||!lick.notes||!lick.notes.length)return;
+      const midis=lick.notes.map(n=>n.midi);
+      const minM=Math.min(...midis)-2,maxM=Math.max(...midis)+2,range=Math.max(1,maxM-minM);
+      const parseTicks=t=>{const [b,bt,s]=t.split(':').map(x=>parseInt(x,10));return b*16+bt*4+s;};
+      const times16=lick.notes.map(n=>parseTicks(n.time));
+      const maxT=Math.max(...times16.map((t,i)=>t+lick.notes[i].dur));
+      const axis=document.createElementNS('http://www.w3.org/2000/svg','g');
+      for(let y=0;y<5;y++){const ly=H-10-(y*(H-20)/4);const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1',10);line.setAttribute('x2',W-10);line.setAttribute('y1',ly);line.setAttribute('y2',ly);axis.appendChild(line);}
+      svg.appendChild(axis);
+      const path=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+      const pts=lick.notes.map((n,i)=>{const t=times16[i];const x=10+(t/maxT)*(W-20);const y=H-10-((n.midi-minM)/range)*(H-20);return`${x},${y}`;}).join(' ');
+      path.setAttribute('points',pts);path.setAttribute('fill','none');path.setAttribute('stroke','white');path.setAttribute('stroke-width','1.5');svg.appendChild(path);
+      lick.notes.forEach((n,i)=>{const t=times16[i];const x=10+(t/maxT)*(W-20);const y=H-10-((n.midi-minM)/range)*(H-20);
+        const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',x);c.setAttribute('cy',y);
+        c.setAttribute('r',n.isChordTone?3.5:2.2);c.setAttribute('fill',n.isChordTone?'#8bdcff':'#b9c1ca');svg.appendChild(c);});
+    }
+    const metaText=l=>l?`${l.genre} • ${l.key} ${l.mode} • ${l.bpm} BPM`:'—';
+    return {renderPitchGraph,metaText};
+  })();
+  </script>
+<!-- === PART 2 END === -->
+    <!-- === UI + APP (with fixed button handling) === -->
+  <script>
+  window.UI = (() => {
+    const els = {
+      key: document.getElementById('keySelect'),
+      mode: document.getElementById('modeSelect'),
+      genre: document.getElementById('genreSelect'),
+      length: document.getElementById('lengthSelect'),
+      notes: document.getElementById('notesSelect'),
+      scalar: document.getElementById('scalarLeapy'),
+      diff: document.getElementById('difficulty'),
+      swing: document.getElementById('toggleSwing'),
+      viz: document.getElementById('toggleViz'),
+      btnGen: document.getElementById('btnGenerate'),
+      btnRegen: document.getElementById('btnRegenerate'),
+      btnPlay: document.getElementById('btnPlay'),
+      btnLoop: document.getElementById('btnLoop'),
+      btnStart: document.getElementById('btnStartAudio'),
+      vizCard: document.getElementById('vizCard'),
+      svg: document.getElementById('pitchGraph'),
+      meta: document.getElementById('metaText')
+    };
+    let currentSettings = null;
+
+    function populateOnce(){
+      Theory.keys.forEach(k=> els.key.add(new Option(k,k)));
+      [
+        'major (Ionian)','natural minor (Aeolian)','harmonic minor','melodic minor (asc.)',
+        'Dorian','Phrygian','Lydian','Mixolydian','Locrian',
+        'major pentatonic','minor pentatonic','blues (hexatonic)',
+        'whole-tone','octatonic diminished (H-W)','octatonic diminished (W-H)','chromatic'
+      ].forEach(m => els.mode.add(new Option(m,m)));
+      ['Classical','Jazz','Rock','Metal'].forEach(g=> els.genre.add(new Option(g,g)));
+      [1,2,3,4].forEach(b=> els.length.add(new Option(`${b}`,b)));
+      [4,6,8,10,12,14,16,20,24,28,32].forEach(n=> els.notes.add(new Option(`${n}`,n)));
+      els.key.value='C'; els.mode.value='major (Ionian)'; els.genre.value='Classical';
+      els.length.value='2'; els.notes.value='12';
+    }
+
+    function setEnabled(flag){
+      ['key','mode','genre','length','notes','scalar','diff','swing','viz'].forEach(id => els[id].disabled = !flag);
+      ['btnGen','btnRegen'].forEach(id => els[id].disabled = !flag);
+    }
+    function allowPlayback(flag){ els.btnPlay.disabled = !flag; els.btnLoop.disabled = !flag; }
+    function settingsFromUI(){ return {
+      key: els.key.value, mode: els.mode.value, genre: els.genre.value,
+      bars: parseInt(els.length.value,10), numNotes: parseInt(els.notes.value,10),
+      scalarLeapy: parseInt(els.scalar.value,10), difficulty: parseInt(els.diff.value,10),
+      swing: els.swing.checked
+    }; }
+    function toggleSwingVisibility(){ els.swing.parentElement.style.opacity = (els.genre.value==='Jazz') ? '1' : '0.5'; }
+    function bindHandlers(onGenerate, onRegenerate, onPlay, onLoop, onStart){
+      els.btnGen.addEventListener('click', ()=>{ currentSettings = settingsFromUI(); toggleSwingVisibility(); onGenerate(currentSettings); });
+      els.btnRegen.addEventListener('click', ()=>{ if(!currentSettings) currentSettings=settingsFromUI(); onRegenerate(currentSettings); });
+      els.btnPlay.addEventListener('click', onPlay);
+      els.btnLoop.addEventListener('click', onLoop);
+      els.btnStart.addEventListener('click', onStart);
+      els.genre.addEventListener('change', toggleSwingVisibility);
+    }
+    function showViz(flag){ els.vizCard.hidden = !flag; }
+    function draw(lick){ els.meta.textContent = Renderer.metaText(lick); if(els.viz.checked){ Renderer.renderPitchGraph(els.svg, lick); } }
+    return { els, populateOnce, setEnabled, allowPlayback, bindHandlers, showViz, draw, settingsFromUI, toggleSwingVisibility };
+  })();
+
+  (()=>{
+    const { els, populateOnce, setEnabled, allowPlayback, bindHandlers, showViz, draw, settingsFromUI, toggleSwingVisibility } = UI;
+    let currentLick = null, part = null, rig = null, loopOn = false;
+
+    window.addEventListener('load', () => {
+      populateOnce();
+      setEnabled(false);
+      allowPlayback(false);
+      showViz(true);
+      toggleSwingVisibility();
+    });
+
+    // === FIXED AUDIO INITIALIZATION AND BUTTON SAFETY ===
+    async function startAudio(){
+      try {
+        await AudioRig.ensureStarted();
+        setEnabled(true);
+        els.btnStart.disabled = true;
+        els.btnStart.textContent = 'Audio Ready';
+      } catch(err){
+        console.error("Audio start failed:", err);
+        alert("Could not start audio. Try again or check autoplay settings.");
+      }
+    }
+
+    function safeClick(el, handler){
+      el.addEventListener('click', async () => {
+        if (el.disabled) return;
+        el.disabled = true;
+        try { await handler(); }
+        finally { setTimeout(()=>{ el.disabled = false; }, 400); }
+      });
+    }
+
+    function cleanupTone(){
+      if(part){ part.stop(); part.dispose(); part=null; }
+      if(rig && rig.cleanup){ rig.cleanup(); rig=null; }
+    }
+
+    function buildRigForGenre(genre){
+      cleanupTone();
+      if(genre==='Jazz') rig = AudioRig.makeJazz();
+      else if(genre==='Rock') rig = AudioRig.makeRock();
+      else if(genre==='Metal') rig = AudioRig.makeMetal();
+      else rig = AudioRig.makeClassical();
+    }
+
+    function ensureTransport(lick){
+      Tone.Transport.bpm.value = lick.bpm;
+      if(lick.genre==='Jazz' && lick.swing){
+        Tone.Transport.swing = 1;
+        Tone.Transport.swingSubdivision = '8n';
+        Tone.Transport.swingAmount = 0.58;
+      } else Tone.Transport.swing = 0;
+    }
+
+    function scheduleLick(lick){
+      ensureTransport(lick);
+      if(part){ part.stop(); part.dispose(); part=null; }
+      const sixteenthSec = Tone.Time('16n').toSeconds();
+      const minGateSec = 0.11;
+      const gateRatio = 0.92;
+      const jitterMs = 3 + (lick.meta.difficulty/100)*6;
+      const events = lick.notes.map(n=>{
+        const t=Tone.Time(n.time).toSeconds();
+        return {t,dur:Math.max(minGateSec,n.dur*sixteenthSec)*gateRatio,midi:n.midi,vel:Math.min(1,Math.max(0.05,n.vel))};
+      });
+      part=new Tone.Part((time,ev)=>{
+        const t=time+(Math.random()*2-1)*(jitterMs/1000);
+        rig.synth.triggerAttackRelease(Tone.Frequency(ev.midi,'midi'),ev.dur,t,ev.vel);
+      },events.map(e=>({time:e.t,...e})));
+      part.loop=false;
+      part.start(0);
+      allowPlayback(true);
+    }
+
+    function generate(settings){
+      buildRigForGenre(settings.genre);
+      currentLick = MusicEngine.generateLick(settings);
+      scheduleLick(currentLick);
+      draw(currentLick);
+    }
+
+    function regenerate(){ if(!currentLick){ generate(settingsFromUI()); } else { generate({...currentLick}); } }
+    function togglePlay(){ if(Tone.Transport.state!=='started'){Tone.Transport.stop();Tone.Transport.start('+0.02');}else{Tone.Transport.stop();}}
+    function toggleLoop(){
+      loopOn=!loopOn;
+      if(loopOn){
+        Tone.Transport.loop=true;
+        const s16=Tone.Time('16n').toSeconds();
+        const last=currentLick?.notes?.at(-1);
+        const lastEnd16=last?(()=>{const[b,bt,s]=last.time.split(':').map(n=>parseInt(n,10));return b*16+bt*4+s+last.dur;})():32;
+        Tone.Transport.loopEnd=lastEnd16*s16+0.01;
+        els.btnLoop.textContent='Loop: On';
+      } else {
+        Tone.Transport.loop=false;
+        els.btnLoop.textContent='Loop';
+      }
+    }
+
+    // Bind buttons through safeClick
+    bindHandlers(
+      (s)=>{ safeClick(els.btnGen, ()=>generate(s)); },
+      ()=>{ safeClick(els.btnRegen, ()=>regenerate()); },
+      ()=>{ safeClick(els.btnPlay, ()=>togglePlay()); },
+      ()=>{ safeClick(els.btnLoop, ()=>toggleLoop()); },
+      ()=>{ safeClick(els.btnStart, ()=>startAudio()); }
+    );
+  })();
+  </script>
+</body>
+</html>
