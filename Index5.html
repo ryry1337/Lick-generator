@@ -3,198 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lick Generator Ear Trainer</title>
+    <title>Pro Lick Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         :root {
-            --bg-color: #121212;
-            --surface-color: #1e1e1e;
-            --primary-color: #ff5722;
+            --bg-color: #0f1115;
+            --surface-color: #1a1d24;
+            --primary-color: #00d2ff;
+            --secondary-color: #3a7bd5;
             --text-color: #ffffff;
-            --text-muted: #aaaaaa;
+            --text-muted: #8892b0;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            text-align: center;
         }
 
-        h1 {
-            margin-top: 0;
-            font-size: 1.8rem;
-        }
-
-        p {
-            color: var(--text-muted);
-            margin-bottom: 30px;
-        }
+        h1 { margin: 10px 0 5px 0; font-size: 1.5rem; color: var(--primary-color); }
+        .subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
 
         .dashboard {
             background-color: var(--surface-color);
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 15px;
             width: 100%;
-            max-width: 350px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
+            max-width: 360px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-sizing: border-box;
         }
 
-        .controls {
-            margin: 20px 0;
+        .control-group {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.03);
+            padding: 10px;
+            border-radius: 8px;
         }
 
-        input[type=range] {
-            width: 70%;
+        select, input[type="range"] {
+            background: #2d3139;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        select { width: 50%; }
+        input[type="range"] { width: 60%; }
+
+        /* Drone Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
         }
 
         button {
-            background-color: var(--surface-color);
+            background-color: transparent;
             color: var(--text-color);
-            border: 2px solid var(--primary-color);
-            padding: 15px 20px;
-            font-size: 1.2rem;
+            border: 1px solid var(--text-muted);
+            padding: 12px;
+            font-size: 1rem;
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
-            width: 100%;
-            margin-bottom: 15px;
-            transition: all 0.2s ease;
-            touch-action: manipulation; /* Prevents double-tap zoom on mobile */
+            transition: all 0.2s;
+            touch-action: manipulation;
         }
 
         button.primary {
-            background-color: var(--primary-color);
-            color: #fff;
+            background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            border: none;
+            grid-column: span 2;
+            padding: 16px;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
         }
 
-        button:active {
-            transform: scale(0.95);
-        }
+        button:active { transform: scale(0.96); }
 
         #reveal-area {
-            min-height: 60px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary-color);
+            margin-top: 20px;
+            min-height: 80px;
+            background: #000;
+            border-radius: 8px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            letter-spacing: 2px;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            padding: 10px;
+            text-align: center;
         }
+        
+        .reveal-hint { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;}
     </style>
 </head>
 <body>
 
-    <h1>Ear Trainer</h1>
-    <p>A Minor Pentatonic</p>
+    <h1>Lick Generator Pro</h1>
+    <div class="subtitle">Listen First. Look Never.</div>
 
     <div class="dashboard">
-        <div class="controls">
-            <label for="bpm">BPM: <span id="bpm-display">120</span></label>
+        <!-- Settings -->
+        <div class="control-group">
+            <label>Key</label>
+            <select id="key-select">
+                <option value="C">C</option><option value="C#">C#</option>
+                <option value="D">D</option><option value="D#">D#</option>
+                <option value="E">E</option><option value="F">F</option>
+                <option value="F#">F#</option><option value="G">G</option>
+                <option value="G#">G#</option><option value="A" selected>A</option>
+                <option value="Bb">Bb</option><option value="B">B</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Scale</label>
+            <select id="scale-select">
+                <option value="minPent">Minor Pentatonic</option>
+                <option value="majPent">Major Pentatonic</option>
+                <option value="blues">Blues Scale</option>
+                <option value="dorian">Dorian</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Notes: <span id="notes-display">5</span></label>
+            <input type="range" id="notes-count" min="3" max="12" value="5">
+        </div>
+
+        <div class="control-group">
+            <label>BPM: <span id="bpm-display">120</span></label>
             <input type="range" id="bpm" min="60" max="200" value="120">
         </div>
 
-        <button id="generate-btn" class="primary">Generate & Play Lick</button>
-        <button id="replay-btn">Replay Lick</button>
-        <button id="reveal-btn">Reveal Notes</button>
+        <div class="control-group">
+            <label>Background Drone</label>
+            <label class="switch">
+                <input type="checkbox" id="drone-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <!-- Controls -->
+        <div class="btn-grid">
+            <button id="generate-btn" class="primary">Generate Lick</button>
+            <button id="replay-btn">Replay</button>
+            <button id="half-speed-btn">1/2 Speed</button>
+            <button id="reveal-btn" style="grid-column: span 2;">Reveal (Stage 1)</button>
+        </div>
         
-        <div id="reveal-area">???</div>
+        <div id="reveal-area">
+            <div class="reveal-hint" id="reveal-hint">Status</div>
+            <div id="reveal-text">Ready to play</div>
+        </div>
     </div>
 
     <script>
-        // Setup Tone.js Synthesizer (A basic pluck sound to mimic a guitar string)
-        const synth = new Tone.PolySynth(Tone.Synth, {
+        // Synthesizers
+        const leadSynth = new Tone.PolySynth(Tone.Synth, {
             oscillator: { type: "triangle" },
-            envelope: { attack: 0.01, decay: 0.5, sustain: 0.1, release: 1 }
+            envelope: { attack: 0.01, decay: 0.3, sustain: 0.2, release: 1 }
         }).toDestination();
 
-        // A Minor Pentatonic Scale
-        const scale = ["A3", "C4", "D4", "E4", "G4", "A4", "C5"];
-        let currentLick = [];
+        const droneSynth = new Tone.Synth({
+            oscillator: { type: "sine" },
+            envelope: { attack: 1, decay: 0, sustain: 1, release: 2 }
+        }).toDestination();
+        droneSynth.volume.value = -15; // Keep it quiet
+
+        // Scale Interval Definitions (in half-steps from root)
+        const scaleIntervals = {
+            minPent: [0, 3, 5, 7, 10, 12, 15],
+            majPent: [0, 2, 4, 7, 9, 12, 14],
+            blues:   [0, 3, 5, 6, 7, 10, 12],
+            dorian:  [0, 2, 3, 5, 7, 9, 10, 12]
+        };
+
+        const intervalNames = {
+            minPent: ["1", "b3", "4", "5", "b7", "8", "b3"],
+            majPent: ["1", "2", "3", "5", "6", "8", "9"],
+            blues:   ["1", "b3", "4", "b5", "5", "b7", "8"],
+            dorian:  ["1", "2", "b3", "4", "5", "6", "b7", "8"]
+        };
+
+        let currentLickData = []; 
         let isPlaying = false;
+        let revealStage = 0;
 
         // DOM Elements
-        const generateBtn = document.getElementById('generate-btn');
-        const replayBtn = document.getElementById('replay-btn');
-        const revealBtn = document.getElementById('reveal-btn');
-        const revealArea = document.getElementById('reveal-area');
-        const bpmSlider = document.getElementById('bpm');
-        const bpmDisplay = document.getElementById('bpm-display');
+        const ui = {
+            key: document.getElementById('key-select'),
+            scale: document.getElementById('scale-select'),
+            notes: document.getElementById('notes-count'),
+            notesDisplay: document.getElementById('notes-display'),
+            bpm: document.getElementById('bpm'),
+            bpmDisplay: document.getElementById('bpm-display'),
+            drone: document.getElementById('drone-toggle'),
+            generate: document.getElementById('generate-btn'),
+            replay: document.getElementById('replay-btn'),
+            halfSpeed: document.getElementById('half-speed-btn'),
+            revealBtn: document.getElementById('reveal-btn'),
+            revealText: document.getElementById('reveal-text'),
+            revealHint: document.getElementById('reveal-hint')
+        };
 
-        // Update BPM display
-        bpmSlider.addEventListener('input', (e) => {
-            bpmDisplay.textContent = e.target.value;
-            Tone.Transport.bpm.value = e.target.value;
+        // Update displays
+        ui.bpm.addEventListener('input', e => ui.bpmDisplay.textContent = e.target.value);
+        ui.notes.addEventListener('input', e => ui.notesDisplay.textContent = e.target.value);
+
+        // Drone Logic
+        ui.drone.addEventListener('change', async (e) => {
+            await Tone.start();
+            if (e.target.checked) {
+                droneSynth.triggerAttack(ui.key.value + "2"); // Play root note 2 octaves down
+            } else {
+                droneSynth.triggerRelease();
+            }
         });
 
-        // Function to generate random notes
-        function createLick(length = 4) {
-            currentLick = [];
-            for (let i = 0; i < length; i++) {
-                const randomNote = scale[Math.floor(Math.random() * scale.length)];
-                currentLick.push(randomNote);
-            }
-            revealArea.textContent = "???"; // Hide notes when new lick generated
-        }
+        // Generate Lick
+        function generateLick() {
+            currentLickData = [];
+            const rootNote = ui.key.value + "3"; // Base octave
+            const scaleType = ui.scale.value;
+            const intervals = scaleIntervals[scaleType];
+            const names = intervalNames[scaleType];
+            const length = parseInt(ui.notes.value);
 
-        // Function to play the lick
-        async function playLick() {
-            if (isPlaying || currentLick.length === 0) return;
-            isPlaying = true;
-
-            // AudioContext must be started by a user gesture
-            await Tone.start(); 
-            
-            // Calculate timing based on BPM (quarter notes)
-            const beatDuration = 60 / Tone.Transport.bpm.value; 
-            const now = Tone.now();
-
-            currentLick.forEach((note, index) => {
-                // Play each note spaced out by the beat duration
-                synth.triggerAttackRelease(note, "8n", now + (index * beatDuration));
+            // Always start on the root note for tonal context
+            currentLickData.push({
+                note: Tone.Frequency(rootNote).toNote(),
+                degree: names[0]
             });
 
-            // Re-enable playback after the lick finishes
-            setTimeout(() => {
-                isPlaying = false;
-            }, currentLick.length * beatDuration * 1000);
+            for (let i = 1; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * intervals.length);
+                const transposedNote = Tone.Frequency(rootNote).transpose(intervals[randomIndex]);
+                currentLickData.push({
+                    note: transposedNote.toNote(),
+                    degree: names[randomIndex]
+                });
+            }
+
+            // Reset Reveal State
+            revealStage = 0;
+            updateRevealUI();
         }
 
-        // Event Listeners
-        generateBtn.addEventListener('click', async () => {
-            createLick(4); // Generates a 4-note lick
-            await playLick();
-        });
+        // Play Lick Logic
+        async function playLick(speedMultiplier = 1) {
+            if (isPlaying || currentLickData.length === 0) return;
+            isPlaying = true;
+            await Tone.start(); 
 
-        replayBtn.addEventListener('click', async () => {
-            if (currentLick.length === 0) {
-                alert("Generate a lick first!");
+            // If key changed while drone is on, update drone pitch
+            if (ui.drone.checked) droneSynth.setNote(ui.key.value + "2");
+            
+            const effectiveBPM = ui.bpm.value * speedMultiplier;
+            const beatDuration = 60 / effectiveBPM; 
+            const now = Tone.now() + 0.1; // slight delay to prevent audio clipping
+
+            currentLickData.forEach((data, index) => {
+                leadSynth.triggerAttackRelease(data.note, "8n", now + (index * beatDuration));
+            });
+
+            setTimeout(() => { isPlaying = false; }, currentLickData.length * beatDuration * 1000 + 200);
+        }
+
+        // Reveal Logic
+        function updateRevealUI() {
+            if (currentLickData.length === 0) {
+                ui.revealText.textContent = "???";
                 return;
             }
-            await playLick();
+
+            if (revealStage === 0) {
+                ui.revealBtn.textContent = "Reveal 1st Note";
+                ui.revealHint.textContent = "Hidden";
+                ui.revealText.textContent = "???";
+            } else if (revealStage === 1) {
+                ui.revealBtn.textContent = "Reveal Intervals";
+                ui.revealHint.textContent = "First Note";
+                ui.revealText.textContent = currentLickData[0].note.replace(/[0-9]/g, '') + " ...";
+            } else if (revealStage === 2) {
+                ui.revealBtn.textContent = "Reveal Exact Notes";
+                ui.revealHint.textContent = "Scale Degrees";
+                ui.revealText.textContent = currentLickData.map(d => d.degree).join(' - ');
+            } else {
+                ui.revealBtn.textContent = "Hide Notes";
+                ui.revealHint.textContent = "Actual Notes";
+                ui.revealText.textContent = currentLickData.map(d => d.note.replace(/[0-9]/g, '')).join(' - ');
+            }
+        }
+
+        ui.revealBtn.addEventListener('click', () => {
+            if (currentLickData.length === 0) return;
+            revealStage = revealStage >= 3 ? 0 : revealStage + 1;
+            updateRevealUI();
         });
 
-        revealBtn.addEventListener('click', () => {
-            if (currentLick.length === 0) return;
-            // Clean up the note names (e.g., "A3" -> "A")
-            const displayNotes = currentLick.map(note => note.replace(/[0-9]/g, ''));
-            revealArea.textContent = displayNotes.join(' - ');
+        // Buttons
+        ui.generate.addEventListener('click', async () => {
+            generateLick();
+            await playLick(1);
         });
 
-        // Initialize BPM
-        Tone.Transport.bpm.value = bpmSlider.value;
+        ui.replay.addEventListener('click', async () => await playLick(1));
+        ui.halfSpeed.addEventListener('click', async () => await playLick(0.5));
 
     </script>
 </body>
