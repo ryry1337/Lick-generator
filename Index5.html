@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lick Generator: The Human Engine</title>
+    <title>Lick Generator: Ultimate Master Build</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         :root {
-            --bg-color: #0d1117;
-            --surface-color: #161b22;
-            --primary-color: #e2b714; /* Session Gold */
-            --secondary-color: #30363d;
-            --text-color: #c9d1d9;
-            --text-muted: #8b949e;
+            --bg-color: #090a0f;
+            --surface-color: #14161f;
+            --primary-color: #00ffcc; /* Cyber-Mint for the final build */
+            --secondary-color: #1b263b;
+            --text-color: #e0e1dd;
+            --text-muted: #778da9;
         }
 
         body {
@@ -27,7 +27,7 @@
         }
 
         h1 { margin: 10px 0 0 0; font-size: 1.5rem; color: var(--primary-color); text-align: center;}
-        .subtitle { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;}
+        .subtitle { color: var(--text-muted); font-size: 0.75rem; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 2px;}
 
         .dashboard {
             background-color: var(--surface-color);
@@ -35,7 +35,7 @@
             border-radius: 12px;
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.8);
             box-sizing: border-box;
             border: 1px solid var(--secondary-color);
         }
@@ -45,7 +45,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--primary-color);
-            margin: 15px 0 8px 0;
+            margin: 12px 0 8px 0;
             border-bottom: 1px solid var(--secondary-color);
             padding-bottom: 4px;
         }
@@ -60,7 +60,7 @@
         }
 
         select, input[type="range"] {
-            background: var(--bg-color);
+            background: #0d1117;
             color: white;
             border: 1px solid var(--secondary-color);
             padding: 6px;
@@ -80,7 +80,7 @@
         }
 
         button {
-            background-color: var(--bg-color);
+            background-color: transparent;
             color: var(--text-color);
             border: 1px solid var(--secondary-color);
             padding: 12px 8px;
@@ -92,7 +92,7 @@
             touch-action: manipulation;
         }
 
-        button.primary { background: var(--primary-color); color: #000; border: none; font-size: 1.1rem; padding: 14px; }
+        button.primary { background: var(--primary-color); color: #000; border: none; font-size: 1.1rem; padding: 14px; box-shadow: 0 0 10px rgba(0,255,204,0.2);}
         button.action { border-color: var(--primary-color); color: var(--primary-color); }
         button:active { transform: scale(0.96); }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -109,15 +109,15 @@
         
         .reveal-hint { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;}
         .reveal-content { font-size: 1.1rem; color: var(--primary-color); font-weight: bold; min-height: 30px;}
-        .active-params { font-size: 0.7rem; color: #aaa; margin-top: 10px; border-top: 1px dashed #333; padding-top: 5px;}
+        .active-params { font-size: 0.75rem; color: #a9a9a9; margin-top: 10px; border-top: 1px dashed #333; padding-top: 8px; line-height: 1.4;}
         
         pre { font-family: 'Courier New', monospace; text-align: left; margin: 0; font-size: 0.85rem; color: var(--text-color); line-height: 1.2; }
     </style>
 </head>
 <body>
 
-    <h1>The Human Engine</h1>
-    <div class="subtitle">Procedural Session Guitarist</div>
+    <h1>Ultimate Engine</h1>
+    <div class="subtitle">Complete Customization</div>
 
     <div class="dashboard">
         
@@ -125,23 +125,39 @@
         <div class="control-group">
             <label>Key</label>
             <select id="key-select">
-                <option value="C">C</option><option value="G">G</option><option value="D">D</option>
-                <option value="A" selected>A</option><option value="E">E</option><option value="B">B</option>
+                <option value="random">🎲 Random Key</option>
+                <option value="C">C</option><option value="C#">C#</option>
+                <option value="D">D</option><option value="Eb">Eb</option>
+                <option value="E">E</option><option value="F">F</option>
+                <option value="F#">F#</option><option value="G">G</option>
+                <option value="G#">G#</option><option value="A" selected>A</option>
+                <option value="Bb">Bb</option><option value="B">B</option>
             </select>
         </div>
         <div class="control-group">
             <label>Scale</label>
             <select id="scale-select">
+                <option value="random">🎲 Random Scale</option>
+                <option value="major">Major (Ionian)</option>
+                <option value="natMinor">Natural Minor (Aeolian)</option>
+                <option value="majPent">Major Pentatonic</option>
                 <option value="minPent">Minor Pentatonic</option>
                 <option value="blues" selected>Blues Scale</option>
                 <option value="dorian">Dorian</option>
                 <option value="mixolydian">Mixolydian</option>
-                <option value="natMinor">Natural Minor</option>
+                <option value="lydian">Lydian</option>
+                <option value="phrygian">Phrygian</option>
+                <option value="harmMinor">Harmonic Minor</option>
+                <option value="melMinor">Melodic Minor</option>
+                <option value="phrygDom">Phrygian Dominant</option>
+                <option value="wholeTone">Whole Tone</option>
+                <option value="diminished">Diminished (H-W)</option>
             </select>
         </div>
         <div class="control-group">
             <label>Register</label>
             <select id="register-select">
+                <option value="random">🎲 Random</option>
                 <option value="low">Low (Riffs)</option>
                 <option value="mid" selected>Mid (Standard)</option>
                 <option value="high">High (Solo)</option>
@@ -152,27 +168,35 @@
         <div class="control-group">
             <label>Genre Rhythm</label>
             <select id="genre-select">
-                <option value="rock" selected>Rock (Straight / Driving)</option>
-                <option value="blues">Blues (Swung / Triplets)</option>
+                <option value="random">🎲 Random</option>
+                <option value="rock" selected>Rock (Driving)</option>
+                <option value="blues">Blues (Triplets)</option>
                 <option value="jazz">Jazz (Syncopated)</option>
+                <option value="metal">Metal (16ths/Pedal)</option>
             </select>
         </div>
         <div class="control-group">
-            <label>Spiciness (Chromatics): <span id="spice-display">15%</span></label>
+            <label>Arpeggio Bias: <span id="arp-display">30%</span></label>
+            <input type="range" id="arp-slider" min="0" max="100" step="10" value="30">
+        </div>
+        <div class="control-group">
+            <label>Chromatics/Spice: <span id="spice-display">15%</span></label>
             <input type="range" id="spice-slider" min="0" max="40" step="5" value="15">
         </div>
         <div class="control-group">
-            <label>Length (Notes): <span id="diff-display">7</span></label>
-            <input type="range" id="diff-slider" min="4" max="16" value="7">
+            <label>Length (Notes): <span id="diff-display">8</span></label>
+            <input type="range" id="diff-slider" min="4" max="16" value="8">
         </div>
 
         <div class="section-title">Playback</div>
         <div class="control-group">
             <label>Backing Track</label>
             <select id="backing-select">
+                <option value="random">🎲 Random</option>
                 <option value="blues">I - IV - V Progression</option>
+                <option value="jazz">ii - V - I Progression</option>
                 <option value="drone">Static Drone</option>
-                <option value="none">Metronome Only</option>
+                <option value="none" selected>Metronome Only</option>
             </select>
         </div>
         <div class="control-group">
@@ -189,32 +213,28 @@
         <div id="reveal-area">
             <div class="reveal-hint" id="reveal-hint">Status</div>
             <div class="reveal-content" id="reveal-text">Ready</div>
+            <div class="active-params" id="active-params-text"></div>
         </div>
     </div>
 
     <script>
         // --- AUDIO ENGINE SETUP ---
-        // 1. The Reverb Room (Glues everything together, kills ear fatigue)
-        const roomReverb = new Tone.Reverb({ decay: 2.5, wet: 0.35 }).toDestination();
-        
-        // 2. Monophonic Lead Synth (Crucial for Portamento/Slides)
+        const roomReverb = new Tone.Reverb({ decay: 2.0, wet: 0.3 }).toDestination();
         const leadSynth = new Tone.Synth({
             oscillator: { type: "triangle" },
             envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 0.8 }
         }).connect(roomReverb);
         
-        // 3. Polyphonic Backing Pad
         const padSynth = new Tone.PolySynth(Tone.Synth, {
             oscillator: { type: "sine" },
-            envelope: { attack: 0.5, decay: 0.5, sustain: 0.5, release: 3.0 } // 3 second release for a long musical tail
+            envelope: { attack: 0.5, decay: 0.5, sustain: 0.5, release: 3.0 }
         }).connect(roomReverb);
-        padSynth.volume.value = -18; 
+        padSynth.volume.value = -16; 
 
-        // 4. Count-In Click
         const clickSynth = new Tone.MembraneSynth({ pitchDecay: 0.008, octaves: 2 }).toDestination();
-        clickSynth.volume.value = -10;
+        clickSynth.volume.value = -12;
 
-        // --- 3-OCTAVE SCALE GENERATOR ---
+        // --- 3-OCTAVE SCALE GENERATOR & MASSIVE DICTIONARY ---
         function createScale(intervals, names, arpIndices, octaves = 3) {
             let resInt = [], resNames = [], resArp = [];
             for (let o = 0; o < octaves; o++) {
@@ -230,206 +250,217 @@
         }
 
         const scales = {
+            major:      createScale([0,2,4,5,7,9,11], ["1","2","3","4","5","6","7"], [0,2,4,6]),
+            natMinor:   createScale([0,2,3,5,7,8,10], ["1","2","b3","4","5","b6","b7"], [0,2,4,6]),
+            majPent:    createScale([0,2,4,7,9], ["1","2","3","5","6"], [0,2,3]),
             minPent:    createScale([0,3,5,7,10], ["1","b3","4","5","b7"], [0,1,3]),
             blues:      createScale([0,3,5,6,7,10], ["1","b3","4","b5","5","b7"], [0,1,4]),
             dorian:     createScale([0,2,3,5,7,9,10], ["1","2","b3","4","5","6","b7"], [0,2,4,6]),
             mixolydian: createScale([0,2,4,5,7,9,10], ["1","2","3","4","5","6","b7"], [0,2,4,6]),
-            natMinor:   createScale([0,2,3,5,7,8,10], ["1","2","b3","4","5","b6","b7"], [0,2,4,6])
+            lydian:     createScale([0,2,4,6,7,9,11], ["1","2","3","#4","5","6","7"], [0,2,4,6]),
+            phrygian:   createScale([0,1,3,5,7,8,10], ["1","b2","b3","4","5","b6","b7"], [0,2,4,6]),
+            harmMinor:  createScale([0,2,3,5,7,8,11], ["1","2","b3","4","5","b6","7"], [0,2,4,6]),
+            melMinor:   createScale([0,2,3,5,7,9,11], ["1","2","b3","4","5","6","7"], [0,2,4,6]),
+            phrygDom:   createScale([0,1,4,5,7,8,10], ["1","b2","3","4","5","b6","b7"], [0,2,4,6]),
+            wholeTone:  createScale([0,2,4,6,8,10], ["1","2","3","#4","#5","b7"], [0,2,4]),
+            diminished: createScale([0,1,3,4,6,7,9,10], ["1","b2","b3","3","b5","5","6","b7"], [0,2,4,6])
         };
 
-        let currentLick = []; 
-        let isPlaying = false; 
-        let revealStage = 0;
-        let activeBPM = 100;
+        let currentLick = []; let isPlaying = false; let revealStage = 0; let activeBPM = 100;
 
         // --- DOM ELEMENTS & LISTENERS ---
         const ui = {
             key: document.getElementById('key-select'), scale: document.getElementById('scale-select'),
             register: document.getElementById('register-select'), genre: document.getElementById('genre-select'),
-            spice: document.getElementById('spice-slider'), diff: document.getElementById('diff-slider'), 
-            backing: document.getElementById('backing-select'), speed: document.getElementById('speed-slider'),
+            arp: document.getElementById('arp-slider'), spice: document.getElementById('spice-slider'), 
+            diff: document.getElementById('diff-slider'), backing: document.getElementById('backing-select'), 
+            speed: document.getElementById('speed-slider'), arpDisp: document.getElementById('arp-display'),
             spiceDisp: document.getElementById('spice-display'), diffDisp: document.getElementById('diff-display'),
             speedDisp: document.getElementById('speed-display'), generate: document.getElementById('generate-btn'),
             replay: document.getElementById('replay-btn'), revealBtn: document.getElementById('reveal-btn'),
-            revealText: document.getElementById('reveal-text'), revealHint: document.getElementById('reveal-hint')
+            revealText: document.getElementById('reveal-text'), revealHint: document.getElementById('reveal-hint'),
+            activeParams: document.getElementById('active-params-text')
         };
 
         ui.diff.addEventListener('input', e => ui.diffDisp.textContent = e.target.value);
+        ui.arp.addEventListener('input', e => ui.arpDisp.textContent = e.target.value + '%');
         ui.spice.addEventListener('input', e => ui.spiceDisp.textContent = e.target.value + '%');
         ui.speed.addEventListener('input', e => ui.speedDisp.textContent = e.target.value + '%');
 
-        // --- THE HUMAN COMPOSITION ALGORITHM ---
+        // Helper for resolving Randoms
+        function resolveParam(selectElement, optionsArray) {
+            if (selectElement.value !== "random") return selectElement.value;
+            return optionsArray[Math.floor(Math.random() * optionsArray.length)];
+        }
+
+        // --- THE ENGINE ALGORITHM ---
         function generateLick() {
             currentLick = [];
-            const scaleData = scales[ui.scale.value];
+            
+            // Resolve Randoms
+            const p = {
+                key: resolveParam(ui.key, ["C","C#","D","Eb","E","F","F#","G","G#","A","Bb","B"]),
+                scale: resolveParam(ui.scale, Object.keys(scales)),
+                register: resolveParam(ui.register, ["low","mid","high"]),
+                genre: resolveParam(ui.genre, ["rock","blues","jazz","metal"]),
+                backing: resolveParam(ui.backing, ["drone","blues","jazz","none"])
+            };
+
+            const scaleNamesMap = {
+                major:"Major", natMinor:"Natural Minor", majPent:"Major Pentatonic", minPent:"Minor Pentatonic", 
+                blues:"Blues", dorian:"Dorian", mixolydian:"Mixolydian", lydian:"Lydian", phrygian:"Phrygian", 
+                harmMinor:"Harmonic Minor", melMinor:"Melodic Minor", phrygDom:"Phrygian Dominant", 
+                wholeTone:"Whole Tone", diminished:"Diminished"
+            };
+
+            ui.activeParams.innerHTML = `Active: <span style="color:var(--primary-color)">${p.key} ${scaleNamesMap[p.scale]}</span><br>Register: ${p.register} | Feel: ${p.genre} | Backing: ${p.backing}`;
+
+            const scaleData = scales[p.scale];
             const maxNotes = parseInt(ui.diff.value); 
+            const arpProb = parseInt(ui.arp.value) / 100;
             const spiceProb = parseInt(ui.spice.value) / 100;
-            const genre = ui.genre.value;
             
-            let baseOctave = (ui.register.value === "low") ? 2 : (ui.register.value === "high" ? 4 : 3);
-            if (["C", "C#", "D", "D#"].includes(ui.key.value) && baseOctave > 1) baseOctave += 1;
+            // Set base octave based on register
+            let baseOctave = (p.register === "low") ? 2 : (p.register === "high" ? 4 : 3);
+            if (["C", "C#", "D", "Eb"].includes(p.key) && baseOctave > 1) baseOctave += 1;
+            const rootFreq = Tone.Frequency(p.key + baseOctave);
             
-            const rootFreq = Tone.Frequency(ui.key.value + baseOctave);
-            
-            // Phase 1: The Hook (Always start on a strong chord tone in the middle register)
+            // Phase 1: Hook (Anchor to middle of scale array on a chord tone)
             let currentIndex = scaleData.arpIndices[Math.floor(scaleData.arpIndices.length / 2)];
-            // Ground it to root or 5th
-            while(scaleData.names[currentIndex] !== "1" && scaleData.names[currentIndex] !== "5") {
-                currentIndex--;
-            }
+            let rootPedalIndex = currentIndex; // Save for metal pedal point
 
             for (let i = 0; i < maxNotes; i++) {
                 
-                // Rhythm Generation (Genre-based)
+                // Rhythm Generation
                 let duration = "8n"; 
-                if (genre === "blues") duration = "8t";
-                if (genre === "rock" && Math.random() > 0.6) duration = "16n";
-                if (genre === "jazz") duration = (i % 2 !== 0) ? "16n" : "8n";
+                if (p.genre === "blues") duration = "8t";
+                if (p.genre === "metal") duration = "16n";
+                if (p.genre === "rock" && Math.random() > 0.5) duration = "16n";
+                if (p.genre === "jazz") duration = (i % 2 !== 0) ? "16n" : "8n";
                 
                 // Phase 3: The Landing
                 if (i === maxNotes - 1) {
-                    duration = "2n"; // Hold the final note
-                    // Force resolution to the Root
-                    let closestRoot = 0;
-                    let minDiff = 999;
+                    duration = "2n"; 
+                    let closestRoot = 0; let minDiff = 999;
                     scaleData.names.forEach((name, idx) => {
                         if ((name === "1" || name === "8") && Math.abs(idx - currentIndex) < minDiff) {
-                            minDiff = Math.abs(idx - currentIndex);
-                            closestRoot = idx;
+                            minDiff = Math.abs(idx - currentIndex); closestRoot = idx;
                         }
                     });
                     currentIndex = closestRoot;
                 } 
                 // Phase 2: The Wander
                 else if (i > 0) {
-                    // Miles Davis Rule: 10% chance for a musical Rest (except first/last note)
+                    // Rest Probability (10%)
                     if (Math.random() < 0.10 && i < maxNotes - 2) {
-                        currentLick.push({ isRest: true, dur: "8n" });
-                        continue; 
+                        currentLick.push({ isRest: true, dur: "8n" }); continue; 
                     }
 
-                    // Standard Step/Leap
-                    currentIndex += (Math.random() > 0.4 ? 1 : -1) * (Math.random() > 0.75 ? 2 : 1);
-                    currentIndex = Math.max(0, Math.min(currentIndex, scaleData.intervals.length - 1));
+                    // Metal phrasing (return to pedal point frequently)
+                    if (p.genre === "metal" && i % 2 !== 0) {
+                        currentIndex = rootPedalIndex;
+                    } 
+                    // Arpeggio Bias check
+                    else if (Math.random() < arpProb) {
+                        let validArps = scaleData.arpIndices.filter(a => Math.abs(a - currentIndex) > 0 && Math.abs(a - currentIndex) <= 5);
+                        if (validArps.length) currentIndex = validArps[Math.floor(Math.random() * validArps.length)];
+                        else currentIndex = scaleData.arpIndices[Math.floor(Math.random() * scaleData.arpIndices.length)];
+                    } 
+                    // Standard Step Walk
+                    else {
+                        currentIndex += (Math.random() > 0.4 ? 1 : -1) * (Math.random() > 0.8 ? 2 : 1);
+                        currentIndex = Math.max(0, Math.min(currentIndex, scaleData.intervals.length - 1));
+                    }
                 }
 
                 const midiNote = rootFreq.transpose(scaleData.intervals[currentIndex]).toMidi();
                 
-                // Spiciness Check (Chromatic Passing Tones)
-                let isPassingTone = false;
-                let actualMidi = midiNote;
-                let displayDegree = scaleData.names[currentIndex];
-
+                // Chromatic Passing Tones
+                let isPassingTone = false; let actualMidi = midiNote; let displayDegree = scaleData.names[currentIndex];
                 if (i > 0 && i < maxNotes - 1 && Math.random() < spiceProb) {
-                    // Inject a chromatic note a half-step below our target
-                    actualMidi = midiNote - 1;
-                    displayDegree = "*chrom*";
-                    isPassingTone = true;
-                    duration = "16n"; // Passing tones are played fast to resolve
+                    actualMidi = midiNote - 1; displayDegree = "chr"; isPassingTone = true; duration = "16n";
                 }
 
-                // Synthetic Articulation (Slide check)
+                // Synthetic Slide Articulation
                 let slideTrigger = false;
                 if (i > 0 && !currentLick[currentLick.length-1].isRest) {
                     let prevMidi = currentLick[currentLick.length-1].midi;
-                    // If the note is 1 or 2 frets away, 20% chance to slide into it
-                    if (Math.abs(actualMidi - prevMidi) <= 2 && Math.random() < 0.20) {
-                        slideTrigger = true;
-                    }
+                    if (Math.abs(actualMidi - prevMidi) <= 2 && Math.random() < 0.20) slideTrigger = true;
                 }
 
-                // Humanize Velocity (Pocket groove)
-                // Downbeats slightly louder, 16th notes quieter
-                let vel = 0.8 + (Math.random() * 0.2); 
+                // Velocity humanization
+                let vel = 0.85 + (Math.random() * 0.15); 
                 if (duration === "16n") vel -= 0.15; 
 
                 currentLick.push({
-                    isRest: false,
-                    midi: actualMidi,
-                    note: Tone.Frequency(actualMidi, "midi").toNote(),
-                    degree: displayDegree,
-                    dur: duration,
-                    slide: slideTrigger,
-                    velocity: vel
+                    isRest: false, midi: actualMidi, note: Tone.Frequency(actualMidi, "midi").toNote(),
+                    degree: displayDegree, dur: duration, slide: slideTrigger, velocity: vel
                 });
             }
             
-            // Generate Backing Track Context
-            if (genre === "rock") activeBPM = 110;
-            else if (genre === "blues") activeBPM = 85;
-            else activeBPM = 120; // Jazz
+            if (p.genre === "rock" || p.genre === "metal") activeBPM = 120;
+            else if (p.genre === "blues") activeBPM = 85;
+            else activeBPM = 110;
 
-            currentLick.backingInfo = { type: ui.backing.value, rootMidi: Tone.Frequency(ui.key.value + "2").toMidi() };
-            
+            currentLick.backingInfo = { type: p.backing, rootMidi: Tone.Frequency(p.key + "2").toMidi() };
             revealStage = 0; updateRevealUI();
         }
 
-        // --- PLAYBACK & GROOVE ENGINE ---
+        // --- PLAYBACK ENGINE ---
         async function playLick() {
             if (isPlaying || currentLick.length === 0) return;
             isPlaying = true; ui.generate.disabled = true; ui.replay.disabled = true;
             
-            await Tone.start(); 
-            
-            // Audio engine initialization (required for Reverb room setup on some mobile browsers)
-            await roomReverb.generate(); 
-
+            await Tone.start(); await roomReverb.generate(); 
             const speedMultiplier = parseInt(ui.speed.value) / 100;
             Tone.Transport.bpm.value = activeBPM * speedMultiplier; 
             
-            const beatDuration = 60 / Tone.Transport.bpm.value;
-            const countInDuration = beatDuration * 4;
+            const beatDur = 60 / Tone.Transport.bpm.value;
+            const countInDur = beatDur * 4;
             const now = Tone.now() + 0.1;
             
-            // 1. Play Count-In (4 clicks)
-            for(let i=0; i<4; i++) {
-                clickSynth.triggerAttackRelease(i===0 ? "G4" : "C4", "16n", now + (i * beatDuration));
+            for(let i=0; i<4; i++) clickSynth.triggerAttackRelease(i===0 ? "G4" : "C4", "16n", now + (i * beatDur));
+            const musicStart = now + countInDur;
+            
+            let totalTime = 0; currentLick.forEach(d => totalTime += Tone.Time(d.dur).toSeconds());
+            
+            // Chord Generation helper
+            function getChord(root, type) {
+                if (type==='maj') return [root, root+4, root+7];
+                if (type==='min') return [root, root+3, root+7];
+                if (type==='dom7') return [root, root+4, root+7, root+10];
+                return [root];
             }
 
-            const musicStart = now + countInDuration;
-            
-            // Calculate Total Duration
-            let totalTime = 0;
-            currentLick.forEach(d => totalTime += Tone.Time(d.dur).toSeconds());
-
-            // 2. Play Backing Track (With extended 2.0 second tail)
             const b = currentLick.backingInfo;
-            const trackTail = totalTime + 2.0; 
-
             if (b.type === "drone") {
-                padSynth.triggerAttackRelease(Tone.Frequency(b.rootMidi, "midi").toNote(), trackTail, musicStart);
+                padSynth.triggerAttackRelease(Tone.Frequency(b.rootMidi, "midi").toNote(), totalTime + 2.0, musicStart);
             } else if (b.type === "blues") {
-                const I_chord = [b.rootMidi, b.rootMidi+4, b.rootMidi+7].map(m => Tone.Frequency(m, "midi").toNote());
-                const IV_chord = [b.rootMidi+5, b.rootMidi+9, b.rootMidi+12].map(m => Tone.Frequency(m, "midi").toNote());
+                const I_chord = getChord(b.rootMidi, 'dom7').map(m => Tone.Frequency(m, "midi").toNote());
+                const IV_chord = getChord(b.rootMidi+5, 'dom7').map(m => Tone.Frequency(m, "midi").toNote());
                 padSynth.triggerAttackRelease(I_chord, totalTime/2, musicStart);
                 padSynth.triggerAttackRelease(IV_chord, (totalTime/2) + 2.0, musicStart + (totalTime/2));
+            } else if (b.type === "jazz") {
+                const ii_chord = getChord(b.rootMidi+2, 'min').map(m => Tone.Frequency(m, "midi").toNote());
+                const V_chord = getChord(b.rootMidi+7, 'dom7').map(m => Tone.Frequency(m, "midi").toNote());
+                padSynth.triggerAttackRelease(ii_chord, totalTime/2, musicStart);
+                padSynth.triggerAttackRelease(V_chord, (totalTime/2) + 2.0, musicStart + (totalTime/2));
             }
 
-            // 3. Play Lead Lick
             let timeOffset = 0;
             currentLick.forEach((data) => {
                 const beatSecs = Tone.Time(data.dur).toSeconds();
-                
                 if (!data.isRest) {
-                    // Micro-timing offset (-15ms to +15ms) for human push/pull
                     let humanTiming = timeOffset + ((Math.random() * 0.03) - 0.015);
-                    
-                    // Portamento Articulation logic
-                    if (data.slide) {
-                        leadSynth.portamento = 0.08; // 80ms glide
-                    } else {
-                        leadSynth.portamento = 0.0;
-                    }
-
+                    leadSynth.portamento = data.slide ? 0.08 : 0.0;
                     leadSynth.triggerAttackRelease(data.note, data.dur, musicStart + humanTiming, data.velocity);
                 }
                 timeOffset += beatSecs;
             });
 
-            // Unlock UI after total time + tail
             setTimeout(() => { 
                 isPlaying = false; ui.generate.disabled = false; ui.replay.disabled = false;
-            }, (countInDuration + totalTime + 2.0) * 1000);
+            }, (countInDur + totalTime + 2.0) * 1000);
         }
 
         // --- SMART "CAGED" TAB GENERATOR ---
@@ -437,7 +468,6 @@
             const strings = [ {n:'e',m:64}, {n:'B',m:59}, {n:'G',m:55}, {n:'D',m:50}, {n:'A',m:45}, {n:'E',m:40} ];
             let tabOutput = strings.map(s => s.n + "|-");
             
-            // Set a rigid positional anchor based on the first played note
             let firstNote = currentLick.find(n => !n.isRest);
             if (!firstNote) return "";
             
@@ -446,22 +476,16 @@
             let strictAnchor = Math.max(0, anchorMidi - bestString.m);
 
             currentLick.forEach((data) => {
-                if (data.isRest) {
-                    for(let j=0; j<strings.length; j++) tabOutput[j] += "---";
-                    return;
-                }
-
+                if (data.isRest) { for(let j=0; j<strings.length; j++) tabOutput[j] += "---"; return; }
                 let placed = false;
-                // Favor strings that keep the fret within 4 frets of our strict anchor (CAGED box)
                 for (let i = 0; i < strings.length; i++) {
                     let fret = data.midi - strings[i].m;
                     if (fret >= 0 && fret <= 24) { 
                         if (Math.abs(fret - strictAnchor) <= 4 || !placed) {
-                            let mark = data.slide ? "/" + fret : fret; // Visual slide indicator
+                            let mark = data.slide ? "/" + fret : fret; 
                             tabOutput[i] += mark.toString().padEnd(3, '-');
                             for (let j = 0; j < strings.length; j++) { if (j !== i) tabOutput[j] += "---"; }
-                            placed = true; 
-                            break;
+                            placed = true; break;
                         }
                     }
                 }
