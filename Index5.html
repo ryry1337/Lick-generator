@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lick Generator Ear Trainer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #ff5722;
+            --text-color: #ffffff;
+            --text-muted: #aaaaaa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 1.8rem;
+        }
+
+        p {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        .dashboard {
+            background-color: var(--surface-color);
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        input[type=range] {
+            width: 70%;
+        }
+
+        button {
+            background-color: var(--surface-color);
+            color: var(--text-color);
+            border: 2px solid var(--primary-color);
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 15px;
+            transition: all 0.2s ease;
+            touch-action: manipulation; /* Prevents double-tap zoom on mobile */
+        }
+
+        button.primary {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        #reveal-area {
+            min-height: 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Ear Trainer</h1>
+    <p>A Minor Pentatonic</p>
+
+    <div class="dashboard">
+        <div class="controls">
+            <label for="bpm">BPM: <span id="bpm-display">120</span></label>
+            <input type="range" id="bpm" min="60" max="200" value="120">
+        </div>
+
+        <button id="generate-btn" class="primary">Generate & Play Lick</button>
+        <button id="replay-btn">Replay Lick</button>
+        <button id="reveal-btn">Reveal Notes</button>
+        
+        <div id="reveal-area">???</div>
+    </div>
+
+    <script>
+        // Setup Tone.js Synthesizer (A basic pluck sound to mimic a guitar string)
+        const synth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "triangle" },
+            envelope: { attack: 0.01, decay: 0.5, sustain: 0.1, release: 1 }
+        }).toDestination();
+
+        // A Minor Pentatonic Scale
+        const scale = ["A3", "C4", "D4", "E4", "G4", "A4", "C5"];
+        let currentLick = [];
+        let isPlaying = false;
+
+        // DOM Elements
+        const generateBtn = document.getElementById('generate-btn');
+        const replayBtn = document.getElementById('replay-btn');
+        const revealBtn = document.getElementById('reveal-btn');
+        const revealArea = document.getElementById('reveal-area');
+        const bpmSlider = document.getElementById('bpm');
+        const bpmDisplay = document.getElementById('bpm-display');
+
+        // Update BPM display
+        bpmSlider.addEventListener('input', (e) => {
+            bpmDisplay.textContent = e.target.value;
+            Tone.Transport.bpm.value = e.target.value;
+        });
+
+        // Function to generate random notes
+        function createLick(length = 4) {
+            currentLick = [];
+            for (let i = 0; i < length; i++) {
+                const randomNote = scale[Math.floor(Math.random() * scale.length)];
+                currentLick.push(randomNote);
+            }
+            revealArea.textContent = "???"; // Hide notes when new lick generated
+        }
+
+        // Function to play the lick
+        async function playLick() {
+            if (isPlaying || currentLick.length === 0) return;
+            isPlaying = true;
+
+            // AudioContext must be started by a user gesture
+            await Tone.start(); 
+            
+            // Calculate timing based on BPM (quarter notes)
+            const beatDuration = 60 / Tone.Transport.bpm.value; 
+            const now = Tone.now();
+
+            currentLick.forEach((note, index) => {
+                // Play each note spaced out by the beat duration
+                synth.triggerAttackRelease(note, "8n", now + (index * beatDuration));
+            });
+
+            // Re-enable playback after the lick finishes
+            setTimeout(() => {
+                isPlaying = false;
+            }, currentLick.length * beatDuration * 1000);
+        }
+
+        // Event Listeners
+        generateBtn.addEventListener('click', async () => {
+            createLick(4); // Generates a 4-note lick
+            await playLick();
+        });
+
+        replayBtn.addEventListener('click', async () => {
+            if (currentLick.length === 0) {
+                alert("Generate a lick first!");
+                return;
+            }
+            await playLick();
+        });
+
+        revealBtn.addEventListener('click', () => {
+            if (currentLick.length === 0) return;
+            // Clean up the note names (e.g., "A3" -> "A")
+            const displayNotes = currentLick.map(note => note.replace(/[0-9]/g, ''));
+            revealArea.textContent = displayNotes.join(' - ');
+        });
+
+        // Initialize BPM
+        Tone.Transport.bpm.value = bpmSlider.value;
+
+    </script>
+</body>
+</html>
