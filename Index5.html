@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lick Generator: Ultimate Edition</title>
+    <title>Lick Generator: Director's Cut</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         :root {
-            --bg-color: #0b0c10;
-            --surface-color: #1f2833;
-            --primary-color: #c5a365; /* Gold tone for ultimate edition */
-            --secondary-color: #45a29e;
-            --text-color: #c5c6c7;
-            --danger-color: #e27d60;
+            --bg-color: #0d1117;
+            --surface-color: #161b22;
+            --primary-color: #58a6ff;
+            --secondary-color: #30363d;
+            --text-color: #c9d1d9;
+            --accent-color: #2ea043;
         }
 
         body {
@@ -26,8 +26,8 @@
             align-items: center;
         }
 
-        h1 { margin: 10px 0 5px 0; font-size: 1.5rem; color: var(--primary-color); text-align: center;}
-        .subtitle { color: var(--text-color); font-size: 0.8rem; margin-bottom: 15px; opacity: 0.7; }
+        h1 { margin: 10px 0 0 0; font-size: 1.6rem; color: var(--primary-color); text-align: center;}
+        .subtitle { color: var(--text-color); font-size: 0.8rem; margin-bottom: 15px; opacity: 0.6; }
 
         .dashboard {
             background-color: var(--surface-color);
@@ -35,32 +35,49 @@
             border-radius: 12px;
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.8);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
             box-sizing: border-box;
+            border: 1px solid var(--secondary-color);
         }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary-color);
+            margin: 15px 0 8px 0;
+            border-bottom: 1px solid var(--secondary-color);
+            padding-bottom: 4px;
+        }
+        .section-title:first-child { margin-top: 0; }
 
         .control-group {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            background: rgba(0,0,0,0.3);
-            padding: 10px;
-            border-radius: 6px;
+            margin-bottom: 10px;
             font-size: 0.9rem;
         }
 
         select, input[type="range"] {
-            background: #0b0c10;
+            background: var(--bg-color);
             color: white;
             border: 1px solid var(--secondary-color);
             padding: 6px;
             border-radius: 4px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
-        select { width: 45%; }
+        select { width: 50%; }
         input[type="range"] { width: 50%; accent-color: var(--primary-color); }
+
+        /* Toggles */
+        .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--secondary-color); transition: .3s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: var(--text-color); transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(22px); background-color: #fff;}
 
         .btn-grid {
             display: grid;
@@ -70,7 +87,7 @@
         }
 
         button {
-            background-color: transparent;
+            background-color: var(--bg-color);
             color: var(--text-color);
             border: 1px solid var(--secondary-color);
             padding: 12px 8px;
@@ -84,14 +101,13 @@
 
         button.primary {
             background: var(--primary-color);
-            color: #0b0c10;
+            color: #000;
             border: none;
             font-size: 1.1rem;
-            box-shadow: 0 4px 10px rgba(197, 163, 101, 0.3);
+            padding: 14px;
         }
         
         button.action { border-color: var(--primary-color); color: var(--primary-color); }
-
         button:active { transform: scale(0.96); }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -108,34 +124,17 @@
         .reveal-hint { font-size: 0.7rem; color: var(--text-color); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;}
         .reveal-content { font-size: 1.1rem; color: var(--primary-color); font-weight: bold; min-height: 30px;}
         
-        /* TAB formatting */
-        pre {
-            font-family: 'Courier New', Courier, monospace;
-            text-align: left;
-            margin: 0;
-            font-size: 0.85rem;
-            color: var(--text-color);
-            line-height: 1.2;
-        }
-
-        /* Library Modal */
-        #library-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; padding-top: 50px;
-        }
-        .lib-item {
-            background: var(--surface-color); width: 90%; max-width: 380px; padding: 15px; 
-            border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--secondary-color);
-        }
+        pre { font-family: 'Courier New', monospace; text-align: left; margin: 0; font-size: 0.85rem; color: var(--text-color); line-height: 1.2; }
     </style>
 </head>
 <body>
 
-    <h1>Ultimate Lick Generator</h1>
-    <div class="subtitle">Smart Engine & TAB Visualization</div>
+    <h1>Director's Cut</h1>
+    <div class="subtitle">Ultimate Customization Engine</div>
 
     <div class="dashboard">
         
+        <div class="section-title">Tonal Center</div>
         <div class="control-group">
             <label>Key</label>
             <select id="key-select">
@@ -144,7 +143,6 @@
                 <option value="E">E</option><option value="B">B</option>
             </select>
         </div>
-
         <div class="control-group">
             <label>Scale</label>
             <select id="scale-select">
@@ -153,41 +151,69 @@
                 <option value="dorian">Dorian</option>
                 <option value="mixolydian">Mixolydian</option>
                 <option value="natMinor">Natural Minor</option>
-                <option value="harmMinor">Harmonic Minor</option>
             </select>
         </div>
-        
         <div class="control-group">
-            <label>Backing Track</label>
-            <select id="backing-select">
-                <option value="none">None (Metronome Only)</option>
-                <option value="drone">Static Bass Drone</option>
-                <option value="blues">I - IV - V (Blues/Rock)</option>
-                <option value="jazz">ii - V - I (Jazz)</option>
+            <label>Register</label>
+            <select id="register-select">
+                <option value="low">Low (Riffs/Rhythm)</option>
+                <option value="mid" selected>Mid (Standard Lead)</option>
+                <option value="high">High (Soaring Solo)</option>
             </select>
         </div>
 
+        <div class="section-title">Shape & Phrasing</div>
+        <div class="control-group">
+            <label>Contour</label>
+            <select id="contour-select">
+                <option value="random">Random Walk</option>
+                <option value="ascending">Ascending</option>
+                <option value="descending">Descending</option>
+                <option value="arch">Arch (Up then Down)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Allow Repeats</label>
+            <label class="switch">
+                <input type="checkbox" id="repeat-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
         <div class="control-group">
             <label>Arpeggio Bias: <span id="arp-display">20%</span></label>
             <input type="range" id="arp-slider" min="0" max="100" step="10" value="20">
         </div>
-
         <div class="control-group">
-            <label>Complexity (Notes): <span id="diff-display">5</span></label>
-            <input type="range" id="diff-slider" min="3" max="12" value="5">
+            <label>Length (Notes): <span id="diff-display">6</span></label>
+            <input type="range" id="diff-slider" min="3" max="16" value="6">
         </div>
-        
-        <div class="control-group" style="background: transparent; border: 1px solid var(--surface-color);">
+
+        <div class="section-title">Feel & Playback</div>
+        <div class="control-group">
+            <label>Rhythm / Genre</label>
+            <select id="rhythm-select">
+                <option value="straight">Rock (Straight)</option>
+                <option value="swing">Jazz (Swung)</option>
+                <option value="triplet">Blues (Triplets)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Backing Track</label>
+            <select id="backing-select">
+                <option value="drone">Static Bass Drone</option>
+                <option value="blues">I - IV - V (Blues/Rock)</option>
+                <option value="none">None</option>
+            </select>
+        </div>
+        <div class="control-group">
             <label>Speed: <span id="speed-display">100%</span></label>
-            <input type="range" id="speed-slider" min="50" max="120" step="10" value="100">
+            <input type="range" id="speed-slider" min="50" max="120" step="5" value="100">
         </div>
 
         <div class="btn-grid">
             <button id="generate-btn" class="primary" style="grid-column: span 2;">Generate & Play</button>
             <button id="replay-btn">Replay Audio</button>
             <button id="reveal-btn" class="action">Reveal Notes</button>
-            <button id="save-btn">⭐ Save Lick</button>
-            <button id="view-lib-btn">View Library</button>
         </div>
         
         <div id="reveal-area">
@@ -196,113 +222,137 @@
         </div>
     </div>
 
-    <div id="library-modal">
-        <h2 style="color: var(--primary-color);">Saved Licks</h2>
-        <div id="library-list" style="width: 100%; display: flex; flex-direction: column; align-items: center; overflow-y: auto; max-height: 70vh;"></div>
-        <button id="close-lib-btn" style="margin-top: 20px; width: 80%; max-width: 300px;" class="primary">Close Library</button>
-    </div>
-
     <script>
         // --- SYNTH SETUP ---
         const synth = new Tone.PolySynth(Tone.Synth, {
             oscillator: { type: "triangle" },
-            envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 1 }
+            envelope: { attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.8 }
         }).toDestination();
         
         const padSynth = new Tone.PolySynth(Tone.Synth, {
             oscillator: { type: "sine" },
             envelope: { attack: 0.5, decay: 0.5, sustain: 0.5, release: 2 }
         }).toDestination();
-        padSynth.volume.value = -18; // Keep chords deep and in the background
+        padSynth.volume.value = -18; 
 
-        // --- MUSIC THEORY ENGINE ---
-        // Intervals in half-steps from root. arpIndices are the 1, 3, 5, 7 chords tones.
+        // --- 3-OCTAVE SCALE GENERATOR ---
+        // Generates massive scales dynamically so contours don't hit the ceiling
+        function createScale(intervals, names, arpIndices, octaves = 3) {
+            let resInt = [], resNames = [], resArp = [];
+            for (let o = 0; o < octaves; o++) {
+                for (let i = 0; i < intervals.length; i++) {
+                    resInt.push(intervals[i] + (o * 12));
+                    resNames.push(names[i]);
+                    if (arpIndices.includes(i)) resArp.push(resInt.length - 1);
+                }
+            }
+            resInt.push(octaves * 12); resNames.push("8");
+            if (arpIndices.includes(0)) resArp.push(resInt.length - 1);
+            return { intervals: resInt, names: resNames, arpIndices: resArp };
+        }
+
         const scales = {
-            minPent:    { intervals: [0, 3, 5, 7, 10, 12, 15], names: ["1", "b3", "4", "5", "b7", "8", "b3"], arpIndices: [0, 1, 3] },
-            blues:      { intervals: [0, 3, 5, 6, 7, 10, 12, 15], names: ["1", "b3", "4", "b5", "5", "b7", "8", "b3"], arpIndices: [0, 1, 4] },
-            dorian:     { intervals: [0, 2, 3, 5, 7, 9, 10, 12], names: ["1", "2", "b3", "4", "5", "6", "b7", "8"], arpIndices: [0, 2, 4, 6] },
-            mixolydian: { intervals: [0, 2, 4, 5, 7, 9, 10, 12], names: ["1", "2", "3", "4", "5", "6", "b7", "8"], arpIndices: [0, 2, 4, 6] },
-            natMinor:   { intervals: [0, 2, 3, 5, 7, 8, 10, 12], names: ["1", "2", "b3", "4", "5", "b6", "b7", "8"], arpIndices: [0, 2, 4, 6] },
-            harmMinor:  { intervals: [0, 2, 3, 5, 7, 8, 11, 12], names: ["1", "2", "b3", "4", "5", "b6", "7", "8"], arpIndices: [0, 2, 4, 6] }
+            minPent:    createScale([0,3,5,7,10], ["1","b3","4","5","b7"], [0,1,3]),
+            blues:      createScale([0,3,5,6,7,10], ["1","b3","4","b5","5","b7"], [0,1,4]),
+            dorian:     createScale([0,2,3,5,7,9,10], ["1","2","b3","4","5","6","b7"], [0,2,4,6]),
+            mixolydian: createScale([0,2,4,5,7,9,10], ["1","2","3","4","5","6","b7"], [0,2,4,6]),
+            natMinor:   createScale([0,2,3,5,7,8,10], ["1","2","b3","4","5","b6","b7"], [0,2,4,6])
         };
 
         let currentLick = []; 
-        let isPlaying = false;
-        let revealStage = 0;
-        let savedLicks = JSON.parse(localStorage.getItem('guitarLicks')) || [];
+        let isPlaying = false; let revealStage = 0;
 
-        // --- DOM ELEMENTS ---
+        // --- DOM ELEMENTS & LISTENERS ---
         const ui = {
-            key: document.getElementById('key-select'),
-            scale: document.getElementById('scale-select'),
-            backing: document.getElementById('backing-select'),
-            arp: document.getElementById('arp-slider'),
-            arpDisp: document.getElementById('arp-display'),
-            diff: document.getElementById('diff-slider'),
-            diffDisp: document.getElementById('diff-display'),
-            speed: document.getElementById('speed-slider'),
-            speedDisp: document.getElementById('speed-display'),
-            generate: document.getElementById('generate-btn'),
-            replay: document.getElementById('replay-btn'),
-            revealBtn: document.getElementById('reveal-btn'),
-            saveBtn: document.getElementById('save-btn'),
-            revealText: document.getElementById('reveal-text'),
-            revealHint: document.getElementById('reveal-hint')
+            key: document.getElementById('key-select'), scale: document.getElementById('scale-select'),
+            register: document.getElementById('register-select'), contour: document.getElementById('contour-select'),
+            repeats: document.getElementById('repeat-toggle'), arp: document.getElementById('arp-slider'),
+            diff: document.getElementById('diff-slider'), rhythm: document.getElementById('rhythm-select'),
+            backing: document.getElementById('backing-select'), speed: document.getElementById('speed-slider'),
+            arpDisp: document.getElementById('arp-display'), diffDisp: document.getElementById('diff-display'),
+            speedDisp: document.getElementById('speed-display'), generate: document.getElementById('generate-btn'),
+            replay: document.getElementById('replay-btn'), revealBtn: document.getElementById('reveal-btn'),
+            revealText: document.getElementById('reveal-text'), revealHint: document.getElementById('reveal-hint')
         };
 
-        // Event Listeners for Sliders
         ui.diff.addEventListener('input', e => ui.diffDisp.textContent = e.target.value);
         ui.arp.addEventListener('input', e => ui.arpDisp.textContent = e.target.value + '%');
         ui.speed.addEventListener('input', e => ui.speedDisp.textContent = e.target.value + '%');
 
-        // --- THE "GUITAR BRAIN" GENERATOR ---
+        // --- GENERATOR LOGIC ---
         function generateLick() {
             currentLick = [];
-            const key = ui.key.value;
             const scaleData = scales[ui.scale.value];
             const maxNotes = parseInt(ui.diff.value); 
-            const arpProbability = parseInt(ui.arp.value) / 100;
+            const arpProb = parseInt(ui.arp.value) / 100;
+            const contour = ui.contour.value;
+            const allowRepeats = ui.repeats.checked;
+            const rhythm = ui.rhythm.value;
             
-            // Standardize octave based on key to keep it in the middle of the neck
-            const rootOctave = (key === "C" || key === "D" || key === "E") ? "3" : "2"; 
-            const rootFreq = Tone.Frequency(key + rootOctave);
+            // Calculate Register Octave
+            let baseOctave = 3;
+            if (ui.register.value === "low") baseOctave = 2;
+            if (ui.register.value === "high") baseOctave = 4;
+            // Adjust to prevent lower keys (C, D) from sounding muddy
+            if (["C", "C#", "D", "D#"].includes(ui.key.value) && baseOctave > 1) baseOctave += 1;
+            
+            const rootFreq = Tone.Frequency(ui.key.value + baseOctave);
+            
+            // Start in the middle of our 3-octave scale array so we have room to go up or down
+            let currentIndex = Math.floor(scaleData.intervals.length / 3); 
+            
+            // If strictly descending, start higher up
+            if (contour === "descending") currentIndex = Math.floor((scaleData.intervals.length / 3) * 2);
+            // If ascending, start at the very bottom
+            if (contour === "ascending") currentIndex = 0;
 
-            let currentIndex = 0; 
             let lastIndex = -1;
 
             for (let i = 0; i < maxNotes; i++) {
+                // Determine Rhythm Duration
                 let duration = "8n"; 
-                if (i === maxNotes - 1) duration = "2n"; // End on a long note
+                if (rhythm === "swing" && i % 2 !== 0) duration = "16n";
+                if (rhythm === "triplet") duration = "8t";
+                if (rhythm === "straight" && Math.random() > 0.7) duration = "16n";
+                if (i === maxNotes - 1) duration = "2n"; 
 
                 if (i > 0) {
                     let attempts = 0;
                     let newIndex = currentIndex;
                     
-                    // Anti-Repetition Loop
-                    while (attempts < 5) {
-                        if (Math.random() < arpProbability) {
-                            // Arpeggio Leap
-                            newIndex = scaleData.arpIndices[Math.floor(Math.random() * scaleData.arpIndices.length)];
-                        } else {
-                            // Stepwise Motion (Guitar friendly)
-                            let move = Math.random();
-                            if (move < 0.7) {
-                                newIndex += (Math.random() > 0.5 ? 1 : -1);
+                    while (attempts < 10) { // Safety break
+                        let isArp = Math.random() < arpProb;
+                        
+                        // Apply Contour Logic
+                        if (contour === "ascending" || (contour === "arch" && i < maxNotes/2)) {
+                            if (isArp) {
+                                let validArps = scaleData.arpIndices.filter(a => a > currentIndex);
+                                newIndex = validArps.length ? validArps[0] : currentIndex + 1;
                             } else {
-                                newIndex += (Math.random() > 0.5 ? 2 : -2);
+                                newIndex = currentIndex + (Math.random() > 0.3 ? 1 : 2);
+                            }
+                        } else if (contour === "descending" || (contour === "arch" && i >= maxNotes/2)) {
+                            if (isArp) {
+                                let validArps = scaleData.arpIndices.filter(a => a < currentIndex).reverse();
+                                newIndex = validArps.length ? validArps[0] : currentIndex - 1;
+                            } else {
+                                newIndex = currentIndex - (Math.random() > 0.3 ? 1 : 2);
+                            }
+                        } else {
+                            // Random Walk
+                            if (isArp) {
+                                newIndex = scaleData.arpIndices[Math.floor(Math.random() * scaleData.arpIndices.length)];
+                            } else {
+                                newIndex += (Math.random() > 0.5 ? 1 : -1) * (Math.random() > 0.8 ? 2 : 1);
                             }
                         }
                         
+                        // Constrain to array bounds
                         newIndex = Math.max(0, Math.min(newIndex, scaleData.intervals.length - 1));
                         
-                        // Break if we didn't just play this exact note
-                        if (newIndex !== lastIndex) break; 
+                        // Repeat Checker
+                        if (allowRepeats || newIndex !== lastIndex) break; 
                         attempts++;
-                    }
-                    
-                    // Final note resolution (Root or 5th)
-                    if (i === maxNotes - 1) {
-                        newIndex = Math.random() > 0.5 ? 0 : scaleData.arpIndices[Math.min(2, scaleData.arpIndices.length-1)]; 
                     }
                     
                     currentIndex = newIndex;
@@ -320,56 +370,34 @@
                 lastIndex = currentIndex;
             }
             
-            revealStage = 0;
-            updateRevealUI();
+            revealStage = 0; updateRevealUI();
         }
 
-        // --- BACKING TRACK LOGIC ---
-        function getChordMidi(rootMidi, type) {
-            // Very simple chord voicings
-            if (type === 'maj') return [rootMidi, rootMidi+4, rootMidi+7];
-            if (type === 'min') return [rootMidi, rootMidi+3, rootMidi+7];
-            if (type === 'dom7') return [rootMidi, rootMidi+4, rootMidi+7, rootMidi+10];
-            return [rootMidi]; // Drone fallback
-        }
-
+        // --- BACKING & PLAYBACK ---
         async function playLick() {
             if (isPlaying || currentLick.length === 0) return;
-            isPlaying = true;
-            ui.generate.disabled = true; ui.replay.disabled = true;
+            isPlaying = true; ui.generate.disabled = true; ui.replay.disabled = true;
             
             await Tone.start(); 
             const speedMultiplier = parseInt(ui.speed.value) / 100;
-            Tone.Transport.bpm.value = 100 * speedMultiplier; 
+            Tone.Transport.bpm.value = (ui.rhythm.value === 'triplet' ? 80 : 100) * speedMultiplier; 
             
             const now = Tone.now() + 0.1;
-            let timeOffset = 0;
-            
-            // Calculate Total Time
             let totalTime = 0;
             currentLick.forEach(d => totalTime += Tone.Time(d.dur).toSeconds());
 
-            // Handle Backing Track
-            const backingStyle = ui.backing.value;
             const rootMidi = Tone.Frequency(ui.key.value + "2").toMidi();
             
-            if (backingStyle === "drone") {
+            if (ui.backing.value === "drone") {
                 padSynth.triggerAttackRelease(Tone.Frequency(rootMidi, "midi").toNote(), totalTime, now);
-            } else if (backingStyle === "blues") {
-                // I - IV - V (Play I for first half, IV/V for second)
-                const I_chord = getChordMidi(rootMidi, 'dom7').map(m => Tone.Frequency(m, "midi").toNote());
-                const IV_chord = getChordMidi(rootMidi + 5, 'dom7').map(m => Tone.Frequency(m, "midi").toNote());
+            } else if (ui.backing.value === "blues") {
+                const I_chord = [rootMidi, rootMidi+4, rootMidi+7, rootMidi+10].map(m => Tone.Frequency(m, "midi").toNote());
+                const IV_chord = [rootMidi+5, rootMidi+9, rootMidi+12].map(m => Tone.Frequency(m, "midi").toNote());
                 padSynth.triggerAttackRelease(I_chord, totalTime/2, now);
                 padSynth.triggerAttackRelease(IV_chord, totalTime/2, now + (totalTime/2));
-            } else if (backingStyle === "jazz") {
-                // ii - V - I
-                const ii_chord = getChordMidi(rootMidi + 2, 'min').map(m => Tone.Frequency(m, "midi").toNote());
-                const V_chord = getChordMidi(rootMidi + 7, 'dom7').map(m => Tone.Frequency(m, "midi").toNote());
-                padSynth.triggerAttackRelease(ii_chord, totalTime/2, now);
-                padSynth.triggerAttackRelease(V_chord, totalTime/2, now + (totalTime/2));
             }
 
-            // Play Lead Notes
+            let timeOffset = 0;
             currentLick.forEach((data) => {
                 const beatSecs = Tone.Time(data.dur).toSeconds();
                 synth.triggerAttackRelease(data.note, data.dur, now + timeOffset);
@@ -377,57 +405,39 @@
             });
 
             setTimeout(() => { 
-                isPlaying = false;
-                ui.generate.disabled = false; ui.replay.disabled = false;
+                isPlaying = false; ui.generate.disabled = false; ui.replay.disabled = false;
             }, timeOffset * 1000 + 300);
         }
 
-        // --- TAB GENERATOR ---
+        // --- TAB GENERATOR & UI ---
         function generateTAB() {
-            // Standard tuning MIDI values for strings
-            const strings = [
-                { name: 'e', midi: 64 }, { name: 'B', midi: 59 }, { name: 'G', midi: 55 },
-                { name: 'D', midi: 50 }, { name: 'A', midi: 45 }, { name: 'E', midi: 40 }
-            ];
+            const strings = [ {n:'e',m:64}, {n:'B',m:59}, {n:'G',m:55}, {n:'D',m:50}, {n:'A',m:45}, {n:'E',m:40} ];
+            let tabOutput = strings.map(s => s.n + "|-");
             
-            let tabOutput = strings.map(s => s.name + "|-");
-            
-            // Find a rough "center" fret based on the first note to keep the shape playable
             let startMidi = currentLick[0].midi;
-            let bestStartString = strings.find(s => startMidi >= s.midi && startMidi <= s.midi + 15) || strings[3];
-            let positionAnchor = startMidi - bestStartString.midi;
-            if (positionAnchor < 0) positionAnchor = 0;
+            let bestString = strings.find(s => startMidi >= s.m && startMidi <= s.m + 15) || strings[3];
+            let anchor = Math.max(0, startMidi - bestString.m);
 
-            currentLick.forEach((noteData) => {
-                let notePlaced = false;
-                
-                // Try to find a string that allows playing the note near the positionAnchor
+            currentLick.forEach((data) => {
+                let placed = false;
                 for (let i = 0; i < strings.length; i++) {
-                    let fret = noteData.midi - strings[i].midi;
-                    if (fret >= 0 && fret <= 15) {
-                        // If it's within a 5 fret stretch of our anchor, use it
-                        if (Math.abs(fret - positionAnchor) <= 5 || !notePlaced) {
+                    let fret = data.midi - strings[i].m;
+                    if (fret >= 0 && fret <= 22) { // Expanded max frets to 22 for higher registers
+                        if (Math.abs(fret - anchor) <= 6 || !placed) {
                             tabOutput[i] += fret.toString().padEnd(3, '-');
-                            // Add dashes to other strings to keep time aligned
                             for (let j = 0; j < strings.length; j++) { if (j !== i) tabOutput[j] += "---"; }
-                            notePlaced = true;
+                            placed = true; anchor = fret; // Shift anchor slightly to follow contour
                             break;
                         }
                     }
                 }
-                // Fallback if note is too low/high (rare, but prevents crashing)
-                if (!notePlaced) {
-                    for(let j=0; j<strings.length; j++) tabOutput[j] += "---";
-                }
+                if (!placed) for(let j=0; j<strings.length; j++) tabOutput[j] += "---";
             });
-
             return "<pre>" + tabOutput.map(line => line + "-|").join('\n') + "</pre>";
         }
 
-        // --- REVEAL UI ---
         function updateRevealUI() {
             if (currentLick.length === 0) { ui.revealText.textContent = "???"; return; }
-            
             if (revealStage === 0) {
                 ui.revealHint.textContent = "Hidden"; ui.revealText.textContent = "???";
                 ui.revealBtn.textContent = "Reveal Scale Degrees";
@@ -447,42 +457,6 @@
             if (currentLick.length === 0) return;
             revealStage = revealStage >= 3 ? 0 : revealStage + 1;
             updateRevealUI();
-        });
-
-        // --- SAVE & LIBRARY SYSTEM ---
-        ui.saveBtn.addEventListener('click', () => {
-            if (currentLick.length === 0) return;
-            const lickString = currentLick.map(d => d.note).join('-');
-            const lickInfo = `${ui.key.value} ${ui.scale.options[ui.scale.selectedIndex].text}`;
-            savedLicks.push({ info: lickInfo, notes: lickString, tab: generateTAB() });
-            localStorage.setItem('guitarLicks', JSON.stringify(savedLicks));
-            
-            ui.saveBtn.textContent = "✅ Saved!";
-            setTimeout(() => ui.saveBtn.textContent = "⭐ Save Lick", 2000);
-        });
-
-        document.getElementById('view-lib-btn').addEventListener('click', () => {
-            const list = document.getElementById('library-list');
-            list.innerHTML = '';
-            
-            if (savedLicks.length === 0) {
-                list.innerHTML = '<p style="color:white;">No saved licks yet.</p>';
-            } else {
-                savedLicks.forEach((lick, index) => {
-                    list.innerHTML += `
-                        <div class="lib-item">
-                            <div style="font-weight:bold; margin-bottom: 5px;">${lick.info}</div>
-                            <div style="font-size:0.8rem; margin-bottom: 5px; color:var(--primary-color);">${lick.notes}</div>
-                            ${lick.tab}
-                        </div>
-                    `;
-                });
-            }
-            document.getElementById('library-modal').style.display = 'flex';
-        });
-
-        document.getElementById('close-lib-btn').addEventListener('click', () => {
-            document.getElementById('library-modal').style.display = 'none';
         });
 
         ui.generate.addEventListener('click', async () => { generateLick(); await playLick(); });
