@@ -12,7 +12,6 @@
             --primary-color: #66fcf1;
             --secondary-color: #45a29e;
             --text-color: #c5c6c7;
-            --accent-color: #ff5722;
         }
 
         body {
@@ -61,7 +60,6 @@
         select { width: 45%; }
         input[type="range"] { width: 60%; accent-color: var(--primary-color); }
 
-        /* Toggles */
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 24px; }
@@ -100,6 +98,7 @@
         }
 
         button:active { transform: scale(0.95); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         #reveal-area {
             margin-top: 20px;
@@ -137,12 +136,21 @@
         </div>
 
         <div class="control-group">
-            <label>Genre Profile</label>
+            <label>Scale</label>
+            <select id="scale-select">
+                <option value="minPent">Minor Pentatonic</option>
+                <option value="majPent">Major Pentatonic</option>
+                <option value="blues">Blues Scale</option>
+                <option value="dorian">Dorian</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Genre Rhythm</label>
             <select id="genre-select">
-                <option value="blues">Blues</option>
-                <option value="rock">Rock</option>
-                <option value="jazz">Jazz</option>
-                <option value="metal">Metal</option>
+                <option value="straight">Rock (Straight)</option>
+                <option value="swing">Jazz (Swung)</option>
+                <option value="triplet">Blues (Triplets)</option>
             </select>
         </div>
 
@@ -152,17 +160,23 @@
         </div>
 
         <div class="control-group">
-            <label>Arpeggio / Chord Tones</label>
+            <label>Arpeggio Only</label>
             <label class="switch">
                 <input type="checkbox" id="arp-toggle">
                 <span class="slider"></span>
             </label>
         </div>
+        
+        <hr style="border: 1px solid #1f2833; margin: 20px 0;">
+
+        <div class="control-group" style="background: transparent;">
+            <label>Speed: <span id="speed-display">100%</span></label>
+            <input type="range" id="speed-slider" min="50" max="100" step="5" value="100">
+        </div>
 
         <div class="btn-grid">
             <button id="generate-btn" class="primary">Generate Lick</button>
-            <button id="replay-btn">Replay Lick</button>
-            <button id="half-speed-btn">1/2 Speed</button>
+            <button id="replay-btn" style="grid-column: span 2;">Replay at Current Speed</button>
             <button id="reveal-btn" style="grid-column: span 2;">Reveal Progression</button>
         </div>
         
@@ -173,9 +187,11 @@
     </div>
 
     <script>
-        // --- SYNTH SETUP (Changes based on Genre) ---
-        const filter = new Tone.Filter(2000, "lowpass").toDestination();
-        const synth = new Tone.PolySynth(Tone.Synth).connect(filter);
+        // --- RESTORED ORIGINAL SYNTH ---
+        const synth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "triangle" },
+            envelope: { attack: 0.01, decay: 0.3, sustain: 0.2, release: 1 }
+        }).toDestination();
         
         const droneSynth = new Tone.Synth({
             oscillator: { type: "sine" },
@@ -185,17 +201,10 @@
 
         // --- MUSIC THEORY ENGINE ---
         const scales = {
-            blues: { intervals: [0, 3, 5, 6, 7, 10, 12, 15], names: ["1", "b3", "4", "b5", "5", "b7", "8", "b3"], arpIndices: [0, 1, 4, 5] },
-            rock:  { intervals: [0, 2, 4, 7, 9, 12, 14, 16], names: ["1", "2", "3", "5", "6", "8", "9", "10"], arpIndices: [0, 2, 3] },
-            jazz:  { intervals: [0, 2, 3, 5, 7, 9, 10, 12], names: ["1", "2", "b3", "4", "5", "6", "b7", "8"], arpIndices: [0, 2, 4, 6] },
-            metal: { intervals: [0, 1, 4, 5, 7, 8, 10, 12], names: ["1", "b2", "3", "4", "5", "b6", "b7", "8"], arpIndices: [0, 2, 4] }
-        };
-
-        const genreProfiles = {
-            blues: { wave: "triangle", bpmBase: 80, filter: 1500 },
-            rock:  { wave: "sawtooth", bpmBase: 110, filter: 3000 },
-            jazz:  { wave: "sine", bpmBase: 130, filter: 800 },
-            metal: { wave: "square", bpmBase: 160, filter: 4000 }
+            minPent: { intervals: [0, 3, 5, 7, 10, 12, 15], names: ["1", "b3", "4", "5", "b7", "8", "b3"], arpIndices: [0, 1, 3, 4] },
+            majPent: { intervals: [0, 2, 4, 7, 9, 12, 14], names: ["1", "2", "3", "5", "6", "8", "9"], arpIndices: [0, 2, 3] },
+            blues:   { intervals: [0, 3, 5, 6, 7, 10, 12, 15], names: ["1", "b3", "4", "b5", "5", "b7", "8", "b3"], arpIndices: [0, 1, 4, 5] },
+            dorian:  { intervals: [0, 2, 3, 5, 7, 9, 10, 12], names: ["1", "2", "b3", "4", "5", "6", "b7", "8"], arpIndices: [0, 2, 4, 6] }
         };
 
         let currentLick = []; 
@@ -205,72 +214,61 @@
         // --- DOM ELEMENTS ---
         const ui = {
             key: document.getElementById('key-select'),
+            scale: document.getElementById('scale-select'),
             genre: document.getElementById('genre-select'),
             diff: document.getElementById('diff-slider'),
             diffDisp: document.getElementById('diff-display'),
             arp: document.getElementById('arp-toggle'),
+            speed: document.getElementById('speed-slider'),
+            speedDisp: document.getElementById('speed-display'),
             generate: document.getElementById('generate-btn'),
             replay: document.getElementById('replay-btn'),
-            halfSpeed: document.getElementById('half-speed-btn'),
             revealBtn: document.getElementById('reveal-btn'),
             revealText: document.getElementById('reveal-text'),
             revealHint: document.getElementById('reveal-hint')
         };
 
         ui.diff.addEventListener('input', e => ui.diffDisp.textContent = e.target.value);
+        ui.speed.addEventListener('input', e => ui.speedDisp.textContent = e.target.value + '%');
 
-        // --- THE "HUMAN" GENERATOR ALGORITHM ---
         function generateLick() {
             currentLick = [];
-            const genre = ui.genre.value;
             const key = ui.key.value;
+            const scaleType = ui.scale.value;
+            const rhythmStyle = ui.genre.value;
             const diff = parseInt(ui.diff.value);
             const isArp = ui.arp.checked;
             
-            const scaleData = scales[genre];
-            const maxNotes = diff * 2 + 2; // Diff 1 = 4 notes, Diff 5 = 12 notes
+            const scaleData = scales[scaleType];
+            const maxNotes = diff * 2 + 2; 
             const rootOctave = key === "C" || key === "D" ? "4" : "3";
             const rootFreq = Tone.Frequency(key + rootOctave);
 
-            // Configure Synth Tone
-            synth.set({ oscillator: { type: genreProfiles[genre].wave } });
-            filter.frequency.value = genreProfiles[genre].filter;
-
-            let currentIndex = 0; // Always start on root
+            let currentIndex = 0; 
 
             for (let i = 0; i < maxNotes; i++) {
-                // Determine rhythm (higher difficulty = more rhythmic variation)
+                // Rhythm based on "Genre" dropdown
                 let duration = "8n";
-                if (diff > 2 && Math.random() > 0.7) duration = "16n";
-                if (i === maxNotes - 1) duration = "4n"; // Last note is always long
+                if (rhythmStyle === "swing" && i % 2 !== 0) duration = "16n"; // Basic swing feel
+                if (rhythmStyle === "triplet") duration = "8t";
+                if (rhythmStyle === "straight" && diff > 3 && Math.random() > 0.7) duration = "16n";
+                if (i === maxNotes - 1) duration = "4n"; 
 
-                // Calculate next note based on "Human" Logic
+                // Human logic
                 if (i > 0) {
                     if (isArp) {
-                        // Pick random index from the allowed arpeggio indices
                         currentIndex = scaleData.arpIndices[Math.floor(Math.random() * scaleData.arpIndices.length)];
-                        // Add octave displacement for higher difficulties
                         if (diff > 3 && Math.random() > 0.5) currentIndex += scaleData.intervals.length - 1;
                     } else {
-                        // Step-and-Leap logic
                         let move = Math.random();
                         if (move < 0.6) {
-                            // Step (Move up or down by 1)
                             currentIndex += (Math.random() > 0.5 ? 1 : -1);
                         } else if (move < 0.9 && diff > 2) {
-                            // Leap (Move up or down by 2 or 3)
                             currentIndex += (Math.random() > 0.5 ? 2 : -2);
-                        } else {
-                            // Stay on same note (rhythmic repetition)
-                            currentIndex += 0;
                         }
-
-                        // Force resolution to Root or 5th on final note
                         if (i === maxNotes - 1) {
-                            currentIndex = Math.random() > 0.5 ? 0 : 4; 
+                            currentIndex = Math.random() > 0.5 ? 0 : scaleData.arpIndices[scaleData.arpIndices.length - 1]; 
                         }
-
-                        // Keep within bounds of array to prevent errors
                         currentIndex = Math.max(0, Math.min(currentIndex, scaleData.intervals.length - 1));
                     }
                 }
@@ -286,19 +284,20 @@
             updateRevealUI();
         }
 
-        async function playLick(speedMultiplier = 1) {
+        async function playLick() {
             if (isPlaying || currentLick.length === 0) return;
             isPlaying = true;
+            
+            // Disable buttons during playback to prevent overlapping clicks
+            ui.generate.disabled = true;
+            ui.replay.disabled = true;
+            
             await Tone.start(); 
             
-            const genre = ui.genre.value;
-            const diff = parseInt(ui.diff.value);
+            // Apply speed scaling directly to the transport BPM
+            const speedMultiplier = parseInt(ui.speed.value) / 100;
+            Tone.Transport.bpm.value = 120 * speedMultiplier; 
             
-            // Speed scales with difficulty and genre baseline
-            const baseBpm = genreProfiles[genre].bpmBase;
-            Tone.Transport.bpm.value = (baseBpm + (diff * 10)) * speedMultiplier; 
-            
-            // Start Drone
             droneSynth.triggerAttack(ui.key.value + "2");
 
             const now = Tone.now() + 0.1;
@@ -312,11 +311,12 @@
 
             setTimeout(() => { 
                 isPlaying = false;
+                ui.generate.disabled = false;
+                ui.replay.disabled = false;
                 droneSynth.triggerRelease();
-            }, timeOffset * 1000 + 500);
+            }, timeOffset * 1000 + 300);
         }
 
-        // --- REVEAL UI ---
         function updateRevealUI() {
             if (currentLick.length === 0) { ui.revealText.textContent = "???"; return; }
             const states = [
@@ -337,10 +337,8 @@
             updateRevealUI();
         });
 
-        // --- EVENTS ---
-        ui.generate.addEventListener('click', async () => { generateLick(); await playLick(1); });
-        ui.replay.addEventListener('click', async () => await playLick(1));
-        ui.halfSpeed.addEventListener('click', async () => await playLick(0.5));
+        ui.generate.addEventListener('click', async () => { generateLick(); await playLick(); });
+        ui.replay.addEventListener('click', async () => await playLick());
 
     </script>
 </body>
