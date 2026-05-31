@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lick Generator: Master Edition</title>
+    <title>Lick Generator: Ultimate Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         :root {
             --bg-color: #0b0c10;
             --surface-color: #1f2833;
-            --primary-color: #66fcf1;
+            --primary-color: #c5a365; /* Gold tone for ultimate edition */
             --secondary-color: #45a29e;
             --text-color: #c5c6c7;
+            --danger-color: #e27d60;
         }
 
         body {
@@ -19,22 +20,22 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 15px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        h1 { margin: 10px 0 5px 0; font-size: 1.5rem; color: var(--primary-color); }
-        .subtitle { color: var(--secondary-color); font-size: 0.9rem; margin-bottom: 20px; }
+        h1 { margin: 10px 0 5px 0; font-size: 1.5rem; color: var(--primary-color); text-align: center;}
+        .subtitle { color: var(--text-color); font-size: 0.8rem; margin-bottom: 15px; opacity: 0.7; }
 
         .dashboard {
             background-color: var(--surface-color);
-            padding: 20px;
-            border-radius: 15px;
+            padding: 15px;
+            border-radius: 12px;
             width: 100%;
-            max-width: 380px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            max-width: 400px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.8);
             box-sizing: border-box;
         }
 
@@ -42,46 +43,40 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            background: rgba(0,0,0,0.2);
-            padding: 12px;
-            border-radius: 8px;
+            margin-bottom: 12px;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
         }
 
         select, input[type="range"] {
             background: #0b0c10;
             color: white;
             border: 1px solid var(--secondary-color);
-            padding: 8px;
-            border-radius: 5px;
-            font-size: 1rem;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 0.9rem;
         }
 
         select { width: 45%; }
-        input[type="range"] { width: 60%; accent-color: var(--primary-color); }
-
-        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary-color); }
-        input:checked + .slider:before { transform: translateX(26px); }
+        input[type="range"] { width: 50%; accent-color: var(--primary-color); }
 
         .btn-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 20px;
+            gap: 10px;
+            margin-top: 15px;
         }
 
         button {
             background-color: transparent;
-            color: var(--primary-color);
-            border: 2px solid var(--secondary-color);
-            padding: 12px;
-            font-size: 1rem;
+            color: var(--text-color);
+            border: 1px solid var(--secondary-color);
+            padding: 12px 8px;
+            font-size: 0.9rem;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
             touch-action: manipulation;
@@ -89,40 +84,55 @@
 
         button.primary {
             background: var(--primary-color);
-            color: #000;
+            color: #0b0c10;
             border: none;
-            grid-column: span 2;
-            padding: 16px;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 15px rgba(102, 252, 241, 0.2);
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(197, 163, 101, 0.3);
         }
+        
+        button.action { border-color: var(--primary-color); color: var(--primary-color); }
 
-        button:active { transform: scale(0.95); }
+        button:active { transform: scale(0.96); }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         #reveal-area {
-            margin-top: 20px;
-            min-height: 90px;
-            background: #0b0c10;
+            margin-top: 15px;
+            background: #000;
             border: 1px solid var(--secondary-color);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: var(--primary-color);
+            border-radius: 6px;
             padding: 10px;
             text-align: center;
+            overflow-x: auto;
         }
         
-        .reveal-hint { font-size: 0.8rem; color: var(--text-color); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;}
+        .reveal-hint { font-size: 0.7rem; color: var(--text-color); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;}
+        .reveal-content { font-size: 1.1rem; color: var(--primary-color); font-weight: bold; min-height: 30px;}
+        
+        /* TAB formatting */
+        pre {
+            font-family: 'Courier New', Courier, monospace;
+            text-align: left;
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-color);
+            line-height: 1.2;
+        }
+
+        /* Library Modal */
+        #library-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; padding-top: 50px;
+        }
+        .lib-item {
+            background: var(--surface-color); width: 90%; max-width: 380px; padding: 15px; 
+            border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--secondary-color);
+        }
     </style>
 </head>
 <body>
 
-    <h1>Lick Generator Pro</h1>
-    <div class="subtitle">Intelligent Ear Training</div>
+    <h1>Ultimate Lick Generator</h1>
+    <div class="subtitle">Smart Engine & TAB Visualization</div>
 
     <div class="dashboard">
         
@@ -139,170 +149,227 @@
             <label>Scale</label>
             <select id="scale-select">
                 <option value="minPent">Minor Pentatonic</option>
-                <option value="majPent">Major Pentatonic</option>
                 <option value="blues">Blues Scale</option>
                 <option value="dorian">Dorian</option>
+                <option value="mixolydian">Mixolydian</option>
+                <option value="natMinor">Natural Minor</option>
+                <option value="harmMinor">Harmonic Minor</option>
             </select>
-        </div>
-
-        <div class="control-group">
-            <label>Genre Rhythm</label>
-            <select id="genre-select">
-                <option value="straight">Rock (Straight)</option>
-                <option value="swing">Jazz (Swung)</option>
-                <option value="triplet">Blues (Triplets)</option>
-            </select>
-        </div>
-
-        <div class="control-group">
-            <label>Difficulty: <span id="diff-display">3</span></label>
-            <input type="range" id="diff-slider" min="1" max="5" value="3">
-        </div>
-
-        <div class="control-group">
-            <label>Arpeggio Only</label>
-            <label class="switch">
-                <input type="checkbox" id="arp-toggle">
-                <span class="slider"></span>
-            </label>
         </div>
         
-        <hr style="border: 1px solid #1f2833; margin: 20px 0;">
+        <div class="control-group">
+            <label>Backing Track</label>
+            <select id="backing-select">
+                <option value="none">None (Metronome Only)</option>
+                <option value="drone">Static Bass Drone</option>
+                <option value="blues">I - IV - V (Blues/Rock)</option>
+                <option value="jazz">ii - V - I (Jazz)</option>
+            </select>
+        </div>
 
-        <div class="control-group" style="background: transparent;">
+        <div class="control-group">
+            <label>Arpeggio Bias: <span id="arp-display">20%</span></label>
+            <input type="range" id="arp-slider" min="0" max="100" step="10" value="20">
+        </div>
+
+        <div class="control-group">
+            <label>Complexity (Notes): <span id="diff-display">5</span></label>
+            <input type="range" id="diff-slider" min="3" max="12" value="5">
+        </div>
+        
+        <div class="control-group" style="background: transparent; border: 1px solid var(--surface-color);">
             <label>Speed: <span id="speed-display">100%</span></label>
-            <input type="range" id="speed-slider" min="50" max="100" step="5" value="100">
+            <input type="range" id="speed-slider" min="50" max="120" step="10" value="100">
         </div>
 
         <div class="btn-grid">
-            <button id="generate-btn" class="primary">Generate Lick</button>
-            <button id="replay-btn" style="grid-column: span 2;">Replay at Current Speed</button>
-            <button id="reveal-btn" style="grid-column: span 2;">Reveal Progression</button>
+            <button id="generate-btn" class="primary" style="grid-column: span 2;">Generate & Play</button>
+            <button id="replay-btn">Replay Audio</button>
+            <button id="reveal-btn" class="action">Reveal Notes</button>
+            <button id="save-btn">⭐ Save Lick</button>
+            <button id="view-lib-btn">View Library</button>
         </div>
         
         <div id="reveal-area">
             <div class="reveal-hint" id="reveal-hint">Status</div>
-            <div id="reveal-text">Ready</div>
+            <div class="reveal-content" id="reveal-text">Ready</div>
         </div>
     </div>
 
+    <div id="library-modal">
+        <h2 style="color: var(--primary-color);">Saved Licks</h2>
+        <div id="library-list" style="width: 100%; display: flex; flex-direction: column; align-items: center; overflow-y: auto; max-height: 70vh;"></div>
+        <button id="close-lib-btn" style="margin-top: 20px; width: 80%; max-width: 300px;" class="primary">Close Library</button>
+    </div>
+
     <script>
-        // --- RESTORED ORIGINAL SYNTH ---
+        // --- SYNTH SETUP ---
         const synth = new Tone.PolySynth(Tone.Synth, {
             oscillator: { type: "triangle" },
-            envelope: { attack: 0.01, decay: 0.3, sustain: 0.2, release: 1 }
+            envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 1 }
         }).toDestination();
         
-        const droneSynth = new Tone.Synth({
+        const padSynth = new Tone.PolySynth(Tone.Synth, {
             oscillator: { type: "sine" },
-            envelope: { attack: 1, decay: 0, sustain: 1, release: 2 }
+            envelope: { attack: 0.5, decay: 0.5, sustain: 0.5, release: 2 }
         }).toDestination();
-        droneSynth.volume.value = -20;
+        padSynth.volume.value = -18; // Keep chords deep and in the background
 
         // --- MUSIC THEORY ENGINE ---
+        // Intervals in half-steps from root. arpIndices are the 1, 3, 5, 7 chords tones.
         const scales = {
-            minPent: { intervals: [0, 3, 5, 7, 10, 12, 15], names: ["1", "b3", "4", "5", "b7", "8", "b3"], arpIndices: [0, 1, 3, 4] },
-            majPent: { intervals: [0, 2, 4, 7, 9, 12, 14], names: ["1", "2", "3", "5", "6", "8", "9"], arpIndices: [0, 2, 3] },
-            blues:   { intervals: [0, 3, 5, 6, 7, 10, 12, 15], names: ["1", "b3", "4", "b5", "5", "b7", "8", "b3"], arpIndices: [0, 1, 4, 5] },
-            dorian:  { intervals: [0, 2, 3, 5, 7, 9, 10, 12], names: ["1", "2", "b3", "4", "5", "6", "b7", "8"], arpIndices: [0, 2, 4, 6] }
+            minPent:    { intervals: [0, 3, 5, 7, 10, 12, 15], names: ["1", "b3", "4", "5", "b7", "8", "b3"], arpIndices: [0, 1, 3] },
+            blues:      { intervals: [0, 3, 5, 6, 7, 10, 12, 15], names: ["1", "b3", "4", "b5", "5", "b7", "8", "b3"], arpIndices: [0, 1, 4] },
+            dorian:     { intervals: [0, 2, 3, 5, 7, 9, 10, 12], names: ["1", "2", "b3", "4", "5", "6", "b7", "8"], arpIndices: [0, 2, 4, 6] },
+            mixolydian: { intervals: [0, 2, 4, 5, 7, 9, 10, 12], names: ["1", "2", "3", "4", "5", "6", "b7", "8"], arpIndices: [0, 2, 4, 6] },
+            natMinor:   { intervals: [0, 2, 3, 5, 7, 8, 10, 12], names: ["1", "2", "b3", "4", "5", "b6", "b7", "8"], arpIndices: [0, 2, 4, 6] },
+            harmMinor:  { intervals: [0, 2, 3, 5, 7, 8, 11, 12], names: ["1", "2", "b3", "4", "5", "b6", "7", "8"], arpIndices: [0, 2, 4, 6] }
         };
 
         let currentLick = []; 
         let isPlaying = false;
         let revealStage = 0;
+        let savedLicks = JSON.parse(localStorage.getItem('guitarLicks')) || [];
 
         // --- DOM ELEMENTS ---
         const ui = {
             key: document.getElementById('key-select'),
             scale: document.getElementById('scale-select'),
-            genre: document.getElementById('genre-select'),
+            backing: document.getElementById('backing-select'),
+            arp: document.getElementById('arp-slider'),
+            arpDisp: document.getElementById('arp-display'),
             diff: document.getElementById('diff-slider'),
             diffDisp: document.getElementById('diff-display'),
-            arp: document.getElementById('arp-toggle'),
             speed: document.getElementById('speed-slider'),
             speedDisp: document.getElementById('speed-display'),
             generate: document.getElementById('generate-btn'),
             replay: document.getElementById('replay-btn'),
             revealBtn: document.getElementById('reveal-btn'),
+            saveBtn: document.getElementById('save-btn'),
             revealText: document.getElementById('reveal-text'),
             revealHint: document.getElementById('reveal-hint')
         };
 
+        // Event Listeners for Sliders
         ui.diff.addEventListener('input', e => ui.diffDisp.textContent = e.target.value);
+        ui.arp.addEventListener('input', e => ui.arpDisp.textContent = e.target.value + '%');
         ui.speed.addEventListener('input', e => ui.speedDisp.textContent = e.target.value + '%');
 
+        // --- THE "GUITAR BRAIN" GENERATOR ---
         function generateLick() {
             currentLick = [];
             const key = ui.key.value;
-            const scaleType = ui.scale.value;
-            const rhythmStyle = ui.genre.value;
-            const diff = parseInt(ui.diff.value);
-            const isArp = ui.arp.checked;
+            const scaleData = scales[ui.scale.value];
+            const maxNotes = parseInt(ui.diff.value); 
+            const arpProbability = parseInt(ui.arp.value) / 100;
             
-            const scaleData = scales[scaleType];
-            const maxNotes = diff * 2 + 2; 
-            const rootOctave = key === "C" || key === "D" ? "4" : "3";
+            // Standardize octave based on key to keep it in the middle of the neck
+            const rootOctave = (key === "C" || key === "D" || key === "E") ? "3" : "2"; 
             const rootFreq = Tone.Frequency(key + rootOctave);
 
             let currentIndex = 0; 
+            let lastIndex = -1;
 
             for (let i = 0; i < maxNotes; i++) {
-                // Rhythm based on "Genre" dropdown
-                let duration = "8n";
-                if (rhythmStyle === "swing" && i % 2 !== 0) duration = "16n"; // Basic swing feel
-                if (rhythmStyle === "triplet") duration = "8t";
-                if (rhythmStyle === "straight" && diff > 3 && Math.random() > 0.7) duration = "16n";
-                if (i === maxNotes - 1) duration = "4n"; 
+                let duration = "8n"; 
+                if (i === maxNotes - 1) duration = "2n"; // End on a long note
 
-                // Human logic
                 if (i > 0) {
-                    if (isArp) {
-                        currentIndex = scaleData.arpIndices[Math.floor(Math.random() * scaleData.arpIndices.length)];
-                        if (diff > 3 && Math.random() > 0.5) currentIndex += scaleData.intervals.length - 1;
-                    } else {
-                        let move = Math.random();
-                        if (move < 0.6) {
-                            currentIndex += (Math.random() > 0.5 ? 1 : -1);
-                        } else if (move < 0.9 && diff > 2) {
-                            currentIndex += (Math.random() > 0.5 ? 2 : -2);
+                    let attempts = 0;
+                    let newIndex = currentIndex;
+                    
+                    // Anti-Repetition Loop
+                    while (attempts < 5) {
+                        if (Math.random() < arpProbability) {
+                            // Arpeggio Leap
+                            newIndex = scaleData.arpIndices[Math.floor(Math.random() * scaleData.arpIndices.length)];
+                        } else {
+                            // Stepwise Motion (Guitar friendly)
+                            let move = Math.random();
+                            if (move < 0.7) {
+                                newIndex += (Math.random() > 0.5 ? 1 : -1);
+                            } else {
+                                newIndex += (Math.random() > 0.5 ? 2 : -2);
+                            }
                         }
-                        if (i === maxNotes - 1) {
-                            currentIndex = Math.random() > 0.5 ? 0 : scaleData.arpIndices[scaleData.arpIndices.length - 1]; 
-                        }
-                        currentIndex = Math.max(0, Math.min(currentIndex, scaleData.intervals.length - 1));
+                        
+                        newIndex = Math.max(0, Math.min(newIndex, scaleData.intervals.length - 1));
+                        
+                        // Break if we didn't just play this exact note
+                        if (newIndex !== lastIndex) break; 
+                        attempts++;
                     }
+                    
+                    // Final note resolution (Root or 5th)
+                    if (i === maxNotes - 1) {
+                        newIndex = Math.random() > 0.5 ? 0 : scaleData.arpIndices[Math.min(2, scaleData.arpIndices.length-1)]; 
+                    }
+                    
+                    currentIndex = newIndex;
                 }
 
+                const midiNote = rootFreq.transpose(scaleData.intervals[currentIndex]).toMidi();
+                
                 currentLick.push({
-                    note: rootFreq.transpose(scaleData.intervals[currentIndex]).toNote(),
+                    midi: midiNote,
+                    note: Tone.Frequency(midiNote, "midi").toNote(),
                     degree: scaleData.names[currentIndex],
                     dur: duration
                 });
+                
+                lastIndex = currentIndex;
             }
             
             revealStage = 0;
             updateRevealUI();
         }
 
+        // --- BACKING TRACK LOGIC ---
+        function getChordMidi(rootMidi, type) {
+            // Very simple chord voicings
+            if (type === 'maj') return [rootMidi, rootMidi+4, rootMidi+7];
+            if (type === 'min') return [rootMidi, rootMidi+3, rootMidi+7];
+            if (type === 'dom7') return [rootMidi, rootMidi+4, rootMidi+7, rootMidi+10];
+            return [rootMidi]; // Drone fallback
+        }
+
         async function playLick() {
             if (isPlaying || currentLick.length === 0) return;
             isPlaying = true;
-            
-            // Disable buttons during playback to prevent overlapping clicks
-            ui.generate.disabled = true;
-            ui.replay.disabled = true;
+            ui.generate.disabled = true; ui.replay.disabled = true;
             
             await Tone.start(); 
-            
-            // Apply speed scaling directly to the transport BPM
             const speedMultiplier = parseInt(ui.speed.value) / 100;
-            Tone.Transport.bpm.value = 120 * speedMultiplier; 
+            Tone.Transport.bpm.value = 100 * speedMultiplier; 
             
-            droneSynth.triggerAttack(ui.key.value + "2");
-
             const now = Tone.now() + 0.1;
             let timeOffset = 0;
+            
+            // Calculate Total Time
+            let totalTime = 0;
+            currentLick.forEach(d => totalTime += Tone.Time(d.dur).toSeconds());
 
+            // Handle Backing Track
+            const backingStyle = ui.backing.value;
+            const rootMidi = Tone.Frequency(ui.key.value + "2").toMidi();
+            
+            if (backingStyle === "drone") {
+                padSynth.triggerAttackRelease(Tone.Frequency(rootMidi, "midi").toNote(), totalTime, now);
+            } else if (backingStyle === "blues") {
+                // I - IV - V (Play I for first half, IV/V for second)
+                const I_chord = getChordMidi(rootMidi, 'dom7').map(m => Tone.Frequency(m, "midi").toNote());
+                const IV_chord = getChordMidi(rootMidi + 5, 'dom7').map(m => Tone.Frequency(m, "midi").toNote());
+                padSynth.triggerAttackRelease(I_chord, totalTime/2, now);
+                padSynth.triggerAttackRelease(IV_chord, totalTime/2, now + (totalTime/2));
+            } else if (backingStyle === "jazz") {
+                // ii - V - I
+                const ii_chord = getChordMidi(rootMidi + 2, 'min').map(m => Tone.Frequency(m, "midi").toNote());
+                const V_chord = getChordMidi(rootMidi + 7, 'dom7').map(m => Tone.Frequency(m, "midi").toNote());
+                padSynth.triggerAttackRelease(ii_chord, totalTime/2, now);
+                padSynth.triggerAttackRelease(V_chord, totalTime/2, now + (totalTime/2));
+            }
+
+            // Play Lead Notes
             currentLick.forEach((data) => {
                 const beatSecs = Tone.Time(data.dur).toSeconds();
                 synth.triggerAttackRelease(data.note, data.dur, now + timeOffset);
@@ -311,30 +378,111 @@
 
             setTimeout(() => { 
                 isPlaying = false;
-                ui.generate.disabled = false;
-                ui.replay.disabled = false;
-                droneSynth.triggerRelease();
+                ui.generate.disabled = false; ui.replay.disabled = false;
             }, timeOffset * 1000 + 300);
         }
 
-        function updateRevealUI() {
-            if (currentLick.length === 0) { ui.revealText.textContent = "???"; return; }
-            const states = [
-                { hint: "Hidden", text: "???" },
-                { hint: "First Note", text: currentLick[0].note.replace(/[0-9]/g, '') + " ..." },
-                { hint: "Scale Degrees", text: currentLick.map(d => d.degree).join(' - ') },
-                { hint: "Exact Notes", text: currentLick.map(d => d.note.replace(/[0-9]/g, '')).join(' - ') }
+        // --- TAB GENERATOR ---
+        function generateTAB() {
+            // Standard tuning MIDI values for strings
+            const strings = [
+                { name: 'e', midi: 64 }, { name: 'B', midi: 59 }, { name: 'G', midi: 55 },
+                { name: 'D', midi: 50 }, { name: 'A', midi: 45 }, { name: 'E', midi: 40 }
             ];
             
-            ui.revealHint.textContent = states[revealStage].hint;
-            ui.revealText.textContent = states[revealStage].text;
-            ui.revealBtn.textContent = revealStage === 3 ? "Hide Notes" : "Reveal Next Hint";
+            let tabOutput = strings.map(s => s.name + "|-");
+            
+            // Find a rough "center" fret based on the first note to keep the shape playable
+            let startMidi = currentLick[0].midi;
+            let bestStartString = strings.find(s => startMidi >= s.midi && startMidi <= s.midi + 15) || strings[3];
+            let positionAnchor = startMidi - bestStartString.midi;
+            if (positionAnchor < 0) positionAnchor = 0;
+
+            currentLick.forEach((noteData) => {
+                let notePlaced = false;
+                
+                // Try to find a string that allows playing the note near the positionAnchor
+                for (let i = 0; i < strings.length; i++) {
+                    let fret = noteData.midi - strings[i].midi;
+                    if (fret >= 0 && fret <= 15) {
+                        // If it's within a 5 fret stretch of our anchor, use it
+                        if (Math.abs(fret - positionAnchor) <= 5 || !notePlaced) {
+                            tabOutput[i] += fret.toString().padEnd(3, '-');
+                            // Add dashes to other strings to keep time aligned
+                            for (let j = 0; j < strings.length; j++) { if (j !== i) tabOutput[j] += "---"; }
+                            notePlaced = true;
+                            break;
+                        }
+                    }
+                }
+                // Fallback if note is too low/high (rare, but prevents crashing)
+                if (!notePlaced) {
+                    for(let j=0; j<strings.length; j++) tabOutput[j] += "---";
+                }
+            });
+
+            return "<pre>" + tabOutput.map(line => line + "-|").join('\n') + "</pre>";
+        }
+
+        // --- REVEAL UI ---
+        function updateRevealUI() {
+            if (currentLick.length === 0) { ui.revealText.textContent = "???"; return; }
+            
+            if (revealStage === 0) {
+                ui.revealHint.textContent = "Hidden"; ui.revealText.textContent = "???";
+                ui.revealBtn.textContent = "Reveal Scale Degrees";
+            } else if (revealStage === 1) {
+                ui.revealHint.textContent = "Scale Degrees"; ui.revealText.textContent = currentLick.map(d => d.degree).join(' - ');
+                ui.revealBtn.textContent = "Reveal Exact Notes";
+            } else if (revealStage === 2) {
+                ui.revealHint.textContent = "Exact Notes"; ui.revealText.textContent = currentLick.map(d => d.note.replace(/[0-9]/g, '')).join(' - ');
+                ui.revealBtn.textContent = "Reveal Guitar TAB";
+            } else {
+                ui.revealHint.textContent = "Guitar TAB"; ui.revealText.innerHTML = generateTAB();
+                ui.revealBtn.textContent = "Hide All";
+            }
         }
 
         ui.revealBtn.addEventListener('click', () => {
             if (currentLick.length === 0) return;
             revealStage = revealStage >= 3 ? 0 : revealStage + 1;
             updateRevealUI();
+        });
+
+        // --- SAVE & LIBRARY SYSTEM ---
+        ui.saveBtn.addEventListener('click', () => {
+            if (currentLick.length === 0) return;
+            const lickString = currentLick.map(d => d.note).join('-');
+            const lickInfo = `${ui.key.value} ${ui.scale.options[ui.scale.selectedIndex].text}`;
+            savedLicks.push({ info: lickInfo, notes: lickString, tab: generateTAB() });
+            localStorage.setItem('guitarLicks', JSON.stringify(savedLicks));
+            
+            ui.saveBtn.textContent = "✅ Saved!";
+            setTimeout(() => ui.saveBtn.textContent = "⭐ Save Lick", 2000);
+        });
+
+        document.getElementById('view-lib-btn').addEventListener('click', () => {
+            const list = document.getElementById('library-list');
+            list.innerHTML = '';
+            
+            if (savedLicks.length === 0) {
+                list.innerHTML = '<p style="color:white;">No saved licks yet.</p>';
+            } else {
+                savedLicks.forEach((lick, index) => {
+                    list.innerHTML += `
+                        <div class="lib-item">
+                            <div style="font-weight:bold; margin-bottom: 5px;">${lick.info}</div>
+                            <div style="font-size:0.8rem; margin-bottom: 5px; color:var(--primary-color);">${lick.notes}</div>
+                            ${lick.tab}
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('library-modal').style.display = 'flex';
+        });
+
+        document.getElementById('close-lib-btn').addEventListener('click', () => {
+            document.getElementById('library-modal').style.display = 'none';
         });
 
         ui.generate.addEventListener('click', async () => { generateLick(); await playLick(); });
