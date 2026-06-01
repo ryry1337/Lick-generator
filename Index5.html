@@ -2,125 +2,403 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Diagnostics Build 11.3</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generative Practice Toolkit for Guitarists</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         :root {
-            --bg-color: #0a0c10; --surface-color: #161821;
-            --primary-color: #00e676; --chord-color: #d500f9; 
-            --secondary-color: #2a2e3d; --text-color: #e2e8f0; --text-muted: #64748b;
+            --bg: #121212; --panel: #1e1e1e; --text: #e0e0e0;
+            --accent: #bb86fc; --accent-hover: #9965f4; --border: #333;
         }
-
-        body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-
-        /* DEBUGGER BAR */
-        #debugger { width: 100%; max-width: 400px; background: #222; border: 2px solid yellow; color: yellow; padding: 10px; margin-bottom: 15px; text-align: center; font-weight: bold; border-radius: 8px; box-sizing: border-box; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        #app-container { max-width: 600px; width: 100%; background: var(--panel); padding: 20px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.5); }
+        h1 { font-size: 1.5rem; text-align: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-top: 0; }
+        h2 { font-size: 1.1rem; color: var(--accent); margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+        .control-group { display: flex; flex-direction: column; margin-bottom: 15px; }
+        .row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .row > div { flex: 1; min-width: 120px; }
+        label { font-size: 0.85rem; margin-bottom: 5px; color: #aaa; }
+        select, input[type="range"] { width: 100%; padding: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; }
+        button { background: var(--accent); color: #000; font-weight: bold; border: none; padding: 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; width: 100%; margin-bottom: 10px; }
+        button:hover { background: var(--accent-hover); }
+        .btn-stop { background: #cf6679; color: #fff; }
+        .btn-stop:hover { background: #b35565; }
+        #hud { background: #000; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.9rem; color: #0f0; min-height: 80px; white-space: pre-wrap; margin-top: 15px; overflow-x: auto; }
         
-        #start-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10,12,16,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--primary-color); cursor: pointer; }
-        #start-overlay h1 { font-size: 2.5rem; margin-bottom: 10px; }
-
-        .tab-container { display: flex; width: 100%; max-width: 400px; margin-bottom: 15px; background: var(--surface-color); border-radius: 8px; border: 1px solid var(--secondary-color); }
-        .tab-btn { flex: 1; padding: 14px; background: transparent; color: var(--text-muted); border: none; font-weight: bold; font-size: 1rem; cursor: pointer; }
-        .tab-btn.active { background: var(--primary-color); color: #000; }
-
-        .dashboard { background-color: var(--surface-color); padding: 18px; border-radius: 12px; width: 100%; max-width: 400px; box-sizing: border-box; border: 1px solid var(--secondary-color); }
-        .btn-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
-        button.action-btn { background-color: transparent; color: var(--text-color); border: 1px solid var(--secondary-color); padding: 16px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; }
-        button.primary { background: var(--primary-color); color: #000; border: none; }
-        button.danger { background: #ff3b30; color: white; border: none;}
+        /* Audio Safety Overlay */
+        #start-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 1000; flex-direction: column; }
+        #start-overlay button { width: 200px; font-size: 1.2rem; padding: 15px; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
     <div id="start-overlay">
-        <h1>TAP HERE</h1>
-        <p>To initialize audio engine</p>
+        <h2>Generative Practice Toolkit</h2>
+        <button id="btn-init-audio">Tap to Start</button>
+        <p style="color:#aaa; font-size:0.9rem;">Initializes AudioContext safely</p>
     </div>
 
-    <div id="debugger">Audio Engine: <span id="audio-status">WAITING</span></div>
-
-    <div class="tab-container">
-        <button class="tab-btn active" id="tab-licks">Test Lick</button>
-    </div>
-
-    <div class="dashboard licks-view" id="view-licks">
-        <div class="btn-grid">
-            <button id="test-beep" class="action-btn" style="border-color: yellow; color: yellow;">1. Test Simple Beep</button>
-            <button id="lick-gen-btn" class="action-btn primary">2. Generate & Play Lick</button>
-            <button id="global-stop" class="action-btn danger">🛑 Stop All</button>
-        </div>
-    </div>
-
-    <script>
-        // --- PURE, NAKED AUDIO ENGINE (NO FX) ---
-        // Routed directly to destination to prevent node crashing
-        const leadSynth = new Tone.Synth().toDestination();
+    <div id="app-container">
+        <h1>Guitar Practice Toolkit</h1>
         
-        const statusDisplay = document.getElementById('audio-status');
+        <h2>Master Theory Engine</h2>
+        <div class="row">
+            <div class="control-group">
+                <label>Key</label>
+                <select id="ctrl-key"></select>
+            </div>
+            <div class="control-group">
+                <label>Scale</label>
+                <select id="ctrl-scale"></select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="control-group">
+                <label>Genre</label>
+                <select id="ctrl-genre">
+                    <option value="Funk">Funk (Syncopated/Rests)</option>
+                    <option value="Metal">Metal (Pedal Point/Fast)</option>
+                    <option value="Country">Country (String Skipping)</option>
+                    <option value="Neoclassical">Neoclassical (Arpeggios)</option>
+                    <option value="Jazz">Jazz (Swing/Space)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Artist Archetype</label>
+                <select id="ctrl-artist">
+                    <option value="Standard">Standard</option>
+                    <option value="Hendrix">Hendrix-esque (Double Stops/Bluesy)</option>
+                    <option value="EVH">EVH-esque (Wide Leaps/Triplets)</option>
+                    <option value="BBKing">B.B. King-esque (Spacious/Triplets)</option>
+                    <option value="Holdsworth">Holdsworth-esque (Dense/Legato)</option>
+                </select>
+            </div>
+        </div>
 
-        // Monitor AudioContext Status
-        setInterval(() => {
-            if (Tone.context) {
-                let state = Tone.context.state;
-                statusDisplay.textContent = state.toUpperCase();
-                if (state === 'running') {
-                    statusDisplay.style.color = '#00e676'; // Green
-                    document.getElementById('debugger').style.borderColor = '#00e676';
-                } else if (state === 'suspended') {
-                    statusDisplay.style.color = '#ff3b30'; // Red
-                    document.getElementById('debugger').style.borderColor = '#ff3b30';
+        <h2>Phrasing & Chords</h2>
+        <div class="row">
+            <div class="control-group">
+                <label>Contour</label>
+                <select id="ctrl-contour">
+                    <option value="Wandering">Wandering Walk</option>
+                    <option value="Ascending">Ascending</option>
+                    <option value="Descending">Descending</option>
+                    <option value="Arch">Arch</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Chord Bars</label>
+                <select id="ctrl-bars">
+                    <option value="4">4 Bars</option>
+                    <option value="8">8 Bars</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>Lick Spiciness (Chromaticism): <span id="val-spiciness">25</span>%</label>
+            <input type="range" id="ctrl-spiciness" min="0" max="100" value="25">
+        </div>
+        <div class="control-group">
+            <label>Chord Spice (Triads -> Ext/Altered): <span id="val-chord-spice">50</span>%</label>
+            <input type="range" id="ctrl-chord-spice" min="0" max="100" value="50">
+        </div>
+        <div class="control-group">
+            <label>Tempo (BPM): <span id="val-tempo">110</span></label>
+            <input type="range" id="ctrl-tempo" min="60" max="200" value="110">
+        </div>
+
+        <button id="btn-gen-lick">🎸 Generate & Play Lick</button>
+        <button id="btn-gen-chords">🎹 Generate & Play Chords</button>
+        <button id="btn-stop" class="btn-stop">⏹ Global Stop</button>
+
+        <h2>Now Playing (HUD & TAB)</h2>
+        <div id="hud">Awaiting Input...</div>
+    </div>
+
+<script>
+/**
+ * Generative Practice Toolkit Logic
+ * Scoped locally inside an IIFE to prevent global namespace pollution and memory leaks.
+ */
+(function() {
+    // --- State & Variables ---
+    let isAudioReady = false;
+    let leadSynth, chordSynth, delay;
+    let currentPart = null;
+    
+    // Guitar Standard Tuning Frequencies / MIDI (simplified mapping)
+    const strings = [ {note: 'E', oct: 4, val: 64}, {note: 'B', oct: 3, val: 59}, {note: 'G', oct: 3, val: 55}, {note: 'D', oct: 3, val: 50}, {note: 'A', oct: 2, val: 45}, {note: 'E', oct: 2, val: 40} ];
+    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    
+    // Exhaustive Scale Dictionary (intervals in semitones)
+    const scales = {
+        'Major': [0, 2, 4, 5, 7, 9, 11],
+        'Natural Minor': [0, 2, 3, 5, 7, 8, 10],
+        'Maj Pentatonic': [0, 2, 4, 7, 9],
+        'Min Pentatonic': [0, 3, 5, 7, 10],
+        'Blues': [0, 3, 5, 6, 7, 10],
+        'Dorian': [0, 2, 3, 5, 7, 9, 10],
+        'Mixolydian': [0, 2, 4, 5, 7, 9, 10],
+        'Lydian': [0, 2, 4, 6, 7, 9, 11],
+        'Phrygian': [0, 1, 3, 5, 7, 8, 10],
+        'Harmonic Minor': [0, 2, 3, 5, 7, 8, 11],
+        'Melodic Minor': [0, 2, 3, 5, 7, 9, 11],
+        'Phrygian Dominant': [0, 1, 4, 5, 7, 8, 10],
+        'Whole Tone': [0, 2, 4, 6, 8, 10],
+        'Diminished': [0, 2, 3, 5, 6, 8, 9, 11],
+        'Chromatic': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    };
+
+    // --- DOM Elements ---
+    const ui = {
+        key: document.getElementById('ctrl-key'), scale: document.getElementById('ctrl-scale'),
+        genre: document.getElementById('ctrl-genre'), artist: document.getElementById('ctrl-artist'),
+        contour: document.getElementById('ctrl-contour'), bars: document.getElementById('ctrl-bars'),
+        spiciness: document.getElementById('ctrl-spiciness'), chordSpice: document.getElementById('ctrl-chord-spice'),
+        tempo: document.getElementById('ctrl-tempo'), hud: document.getElementById('hud'),
+        btnInit: document.getElementById('btn-init-audio'), btnLick: document.getElementById('btn-gen-lick'),
+        btnChords: document.getElementById('btn-gen-chords'), btnStop: document.getElementById('btn-stop'),
+        overlay: document.getElementById('start-overlay')
+    };
+
+    // --- Initialization ---
+    function populateDropdowns() {
+        // Keys
+        notes.forEach(n => ui.key.add(new Option(n, n)));
+        ui.key.add(new Option('🎲 Random', 'Random'));
+        ui.key.add(new Option('None/Atonal', 'Atonal'));
+        
+        // Scales
+        for (let s in scales) ui.scale.add(new Option(s, s));
+    }
+
+    function initAudioContext() {
+        if (isAudioReady) return;
+        Tone.start();
+        
+        // 1. Audio Safety: FeedbackDelay instead of CPU-heavy Reverb
+        delay = new Tone.FeedbackDelay("8n", 0.3).toDestination();
+        
+        leadSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "triangle8" },
+            envelope: { attack: 0.01, decay: 0.1, sustain: 0.3, release: 1 }
+        }).connect(delay);
+        leadSynth.volume.value = -6;
+
+        chordSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "sawtooth" },
+            envelope: { attack: 0.05, decay: 0.2, sustain: 0.5, release: 1.5 },
+            filterEnvelope: { attack: 0.05, decay: 0.2, sustain: 0.5, baseFrequency: 200, octaves: 4 }
+        }).toDestination();
+        chordSynth.volume.value = -12;
+
+        isAudioReady = true;
+        ui.overlay.classList.add('hidden');
+    }
+
+    // --- Core Audio Safety: Hard Reset ---
+    function hardReset() {
+        // Flushes buffers, stops transport, releases synths to prevent silent tabs/memory leaks
+        Tone.Transport.stop();
+        Tone.Transport.cancel(0);
+        if (currentPart) {
+            currentPart.stop();
+            currentPart.dispose();
+            currentPart = null;
+        }
+        leadSynth.releaseAll();
+        chordSynth.releaseAll();
+    }
+
+    // --- Theory Engine Helpers ---
+    function getRootIndex(keyStr) {
+        if (keyStr === 'Random') return Math.floor(Math.random() * 12);
+        if (keyStr === 'Atonal') return 0; // Baseline C for atonal math
+        return notes.indexOf(keyStr);
+    }
+
+    function getScaleNotes(rootIdx, scaleName) {
+        if (scaleName === 'Atonal' || rootIdx === 'Atonal') return scales['Chromatic'].map(i => (rootIdx + i) % 12);
+        return scales[scaleName].map(i => (rootIdx + i) % 12);
+    }
+
+    function noteIdxToString(idx, octave) {
+        return `${notes[idx % 12]}${octave}`;
+    }
+
+    // --- Tab / Playability Constraint Engine (CAGED) ---
+    // Finds playable notes within a 4-fret span anchor
+    function getPlayablePool(rootIdx, scaleName, baseOctave = 3) {
+        const pool = [];
+        const scaleNotes = getScaleNotes(rootIdx, scaleName);
+        const rootString = strings[4]; // Anchor to A string for CAGED logic
+        const anchorFret = (rootIdx + 12 - (rootString.val % 12)) % 12; // Base fret
+        
+        // Scan strings and frets to build 2-octave CAGED position
+        for (let sIdx = 5; sIdx >= 0; sIdx--) {
+            let str = strings[sIdx];
+            for (let fret = anchorFret; fret <= anchorFret + 4; fret++) { // 4-fret constraint
+                let midiVal = str.val + fret;
+                let noteClass = midiVal % 12;
+                if (scaleNotes.includes(noteClass)) {
+                    let oct = Math.floor(midiVal / 12) - 1;
+                    pool.push({ note: notes[noteClass], oct: oct, midi: midiVal, str: str.note, fret: fret });
                 }
             }
-        }, 500);
+        }
+        // Deduplicate
+        const uniquePool = [];
+        const seen = new Set();
+        pool.forEach(p => {
+            if (!seen.has(p.midi)) { seen.add(p.midi); uniquePool.push(p); }
+        });
+        return uniquePool.sort((a,b) => a.midi - b.midi);
+    }
 
-        // AGGRESSIVE WAKE UP
-        async function wakeAudio() {
-            if (Tone.context.state !== 'running') {
-                await Tone.start();
+    // --- Generation Engines ---
+    function generateLick() {
+        hardReset();
+        Tone.Transport.bpm.value = ui.tempo.value;
+        
+        const key = ui.key.value;
+        const scale = ui.scale.value;
+        const rootIdx = getRootIndex(key);
+        const genre = ui.genre.value;
+        const artist = ui.artist.value;
+        const contour = ui.contour.value;
+        const spice = parseInt(ui.spiciness.value) / 100;
+
+        let pool = getPlayablePool(rootIdx, scale);
+        if(pool.length === 0) pool = getPlayablePool(0, 'Chromatic'); // Fallback
+
+        let lick = [];
+        let numNotes = genre === 'Metal' ? 16 : genre === 'Funk' ? 8 : 12; // Archetype phrasing lengths
+        
+        // Build raw note sequence
+        for (let i = 0; i < numNotes; i++) {
+            let pick = pool[Math.floor(Math.random() * pool.length)];
+            
+            // Chromatic Injection (Spice)
+            if (Math.random() < spice) {
+                let chromMidi = pick.midi + (Math.random() > 0.5 ? 1 : -1);
+                pick = { note: notes[chromMidi%12], oct: Math.floor(chromMidi/12)-1, midi: chromMidi, str:'?', fret:'~' };
             }
+            lick.push(pick);
         }
 
-        // Bind to both click and touchstart
-        const overlay = document.getElementById('start-overlay');
-        overlay.addEventListener('click', async () => { await wakeAudio(); overlay.style.display = 'none'; });
-        overlay.addEventListener('touchstart', async () => { await wakeAudio(); overlay.style.display = 'none'; });
+        // Contour Control
+        if (contour === 'Ascending') lick.sort((a, b) => a.midi - b.midi);
+        else if (contour === 'Descending') lick.sort((a, b) => b.midi - a.midi);
+        else if (contour === 'Arch') {
+            lick.sort((a, b) => a.midi - b.midi);
+            let half = lick.splice(Math.ceil(lick.length/2));
+            lick = lick.concat(half.reverse());
+        }
 
-        // 1. SIMPLE BEEP TEST
-        document.getElementById('test-beep').addEventListener('click', async () => {
-            await wakeAudio();
-            leadSynth.triggerAttackRelease("C4", "8n");
+        // Apply Rhythm & Artist Archetypes
+        let timeAcc = 0;
+        let events = [];
+        let tabString = "";
+
+        lick.forEach((n, idx) => {
+            let dur = "8n"; // Default
+            
+            // Archetype overrides
+            if (genre === 'Funk' && Math.random() < 0.3) dur = "16n"; // Rests/syncopation simulation via shorter dur
+            if (genre === 'Metal') dur = "16n"; // Fast pedal points
+            if (artist === 'EVH' && idx % 3 === 0) dur = "8t"; // Triplets
+            if (artist === 'BBKing' && idx % 2 === 0) { dur = "4n"; timeAcc += Tone.Time("8n").toSeconds(); } // Spacious
+
+            events.push({ time: timeAcc, note: `${n.note}${n.oct}`, dur: dur });
+            tabString += `${n.note}(${n.str}${n.fret}) `;
+            timeAcc += Tone.Time(dur).toSeconds();
         });
 
-        // 2. LICK TEST
-        const scale = ["A3", "C4", "D4", "E4", "G4", "A4"];
+        // Schedule & Play
+        currentPart = new Tone.Part((time, value) => {
+            leadSynth.triggerAttackRelease(value.note, value.dur, time);
+        }, events).start(0);
+
+        Tone.Transport.start();
+
+        // Update HUD
+        ui.hud.innerHTML = `[LICK PLAYING]\nKey: ${key} | Scale: ${scale}\nGenre: ${genre} | Artist: ${artist}\nContour: ${contour} | Spice: ${ui.spiciness.value}%\n\nTAB / CAGED POS:\n${tabString}`;
+    }
+
+    function generateChords() {
+        hardReset();
+        Tone.Transport.bpm.value = ui.tempo.value;
+
+        const key = ui.key.value;
+        const scale = ui.scale.value;
+        const rootIdx = getRootIndex(key);
+        const bars = parseInt(ui.bars.value);
+        const spice = parseInt(ui.chordSpice.value); // 0 = Triad, 50 = 7ths, 100 = Extended
         
-        document.getElementById('lick-gen-btn').addEventListener('click', async () => {
-            await wakeAudio();
-            Tone.Transport.stop();
-            Tone.Transport.cancel(0);
+        const scaleIntervals = scales[scale] || scales['Major'];
+        let progression = [];
+        let hudText = "";
+
+        for (let i = 0; i < bars; i++) {
+            // Pick a diatonic root
+            let diatonicDegree = Math.floor(Math.random() * scaleIntervals.length);
+            let chordRootMidi = rootIdx + scaleIntervals[diatonicDegree];
             
-            Tone.Transport.bpm.value = 110;
-            let timeOffset = 0;
-            
-            for(let i=0; i<6; i++) {
-                let note = scale[Math.floor(Math.random() * scale.length)];
-                Tone.Transport.scheduleOnce((time) => {
-                    leadSynth.triggerAttackRelease(note, "8n", time);
-                }, "+" + timeOffset);
-                timeOffset += 0.25; // Quarter second apart
+            let chordNotes = [];
+            // Build Triad
+            chordNotes.push(chordRootMidi); // Root
+            chordNotes.push(rootIdx + scaleIntervals[(diatonicDegree + 2) % scaleIntervals.length]); // 3rd
+            chordNotes.push(rootIdx + scaleIntervals[(diatonicDegree + 4) % scaleIntervals.length]); // 5th
+
+            // Apply Chord Spice
+            if (spice >= 33) {
+                // Add 7th
+                chordNotes.push(rootIdx + scaleIntervals[(diatonicDegree + 6) % scaleIntervals.length]);
             }
+            if (spice >= 80) {
+                // Add 9th / Extensions
+                chordNotes.push(rootIdx + scaleIntervals[(diatonicDegree + 8) % scaleIntervals.length] + 12);
+            }
+
+            // Apply Open Voicing (Drop Bass by 12)
+            chordNotes[0] -= 12;
+
+            // Format for Tone.js (Map to octave 3 and 4)
+            let formattedNotes = chordNotes.map(n => noteIdxToString(n, n < rootIdx ? 2 : 3));
+            progression.push({ time: `${i}:0:0`, notes: formattedNotes, dur: "1m" });
             
-            Tone.Transport.start();
-        });
+            hudText += `Bar ${i+1}: [${formattedNotes.join(', ')}] \n`;
+        }
 
-        // STOP
-        document.getElementById('global-stop').addEventListener('click', () => {
-            Tone.Transport.stop();
-            Tone.Transport.cancel(0);
-            leadSynth.releaseAll();
-        });
+        currentPart = new Tone.Part((time, value) => {
+            chordSynth.triggerAttackRelease(value.notes, value.dur, time);
+        }, progression).start(0);
 
-    </script>
+        Tone.Transport.start();
+
+        ui.hud.innerHTML = `[CHORDS PLAYING]\nKey: ${key} ${scale} | Spice: ${spice}%\nLength: ${bars} Bars | Open Voicings Applied\n\nVOICINGS:\n${hudText}`;
+    }
+
+    // --- Event Listeners ---
+    ui.spiciness.addEventListener('input', e => document.getElementById('val-spiciness').innerText = e.target.value);
+    ui.chordSpice.addEventListener('input', e => document.getElementById('val-chord-spice').innerText = e.target.value);
+    ui.tempo.addEventListener('input', e => document.getElementById('val-tempo').innerText = e.target.value);
+
+    ui.btnInit.addEventListener('click', initAudioContext);
+    ui.btnLick.addEventListener('click', () => { if(isAudioReady) generateLick(); });
+    ui.btnChords.addEventListener('click', () => { if(isAudioReady) generateChords(); });
+    ui.btnStop.addEventListener('click', () => {
+        hardReset();
+        ui.hud.innerHTML = "[STOPPED] Audio buffers flushed.";
+    });
+
+    // Run Setup
+    populateDropdowns();
+
+})();
+</script>
 </body>
 </html>
